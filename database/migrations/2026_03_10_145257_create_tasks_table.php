@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->string('label');
+            $table->enum('status', ['en cours', 'validé', 'bloqué'])->default('en cours');
+            $table->date('due_date');
+            $table->string('quote_number')->nullable();
+            $table->string('billing_info')->nullable();
+            $table->integer('estimated_hours');
+            $table->boolean('is_paid')->default(false);
             $table->timestamps();
         });
     }

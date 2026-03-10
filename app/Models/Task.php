@@ -9,4 +9,20 @@ class Task extends Model
 {
     /** @use HasFactory<\Database\Factories\TaskFactory> */
     use HasFactory;
+    
+    protected $fillable = [
+        'client_id',
+        'label',
+        'status',
+        'due_date',
+        'quote_number',
+        'billing_info',
+        'estimated_hours',
+        'is_paid'
+    ];
+
+    public function clients() 
+    {
+        return $this->belongsTo(Client::class);
+    }
 }
