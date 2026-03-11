@@ -1,4 +1,5 @@
 <x-layout>
+    <a href="{{ route('tasks.create') }}"> + Ajouter une grande tache</a>
     <table>
         <thead>
             <tr>
@@ -22,13 +23,19 @@
                 <td>{{ $task->label }}</td>
                 <td></td>
                 <td>{{ $task->status }}</td>
-                <td></td>
+                <td>
+                @forelse ($task->equipes as $membre)
+                    {{ $membre->prenom }} {{ $membre->nom }}
+                @empty
+                -
+                @endforelse
+                </td>
                 <td>{{ $task->due_date }}</td>
                 <td>{{ $task->estimated_hours }}</td>
                 <td>{{ $task->actual_hours }}</td>
                 <td>{{ $task->compteur_temps }}</td>
-                <td>{{ $task->quote_number }}</td>
-                <td>{{ $task->billing_info }}</td>
+                <td>{{ $task->quote_number ?? '-'}}</td>
+                <td>{{ $task->billing_info ?? '-'}}</td>
             @endforeach
             </tr>
         </tbody>

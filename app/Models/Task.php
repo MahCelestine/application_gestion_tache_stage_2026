@@ -41,4 +41,9 @@ class Task extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+    public function equipes()
+    {
+        return $this->belongsToMany(Equipe::class);
+    }
 }
