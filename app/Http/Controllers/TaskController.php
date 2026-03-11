@@ -6,6 +6,7 @@ use App\Models\Task;
 
 class TaskController extends Controller
 {
+
     public function index() 
     {
         $tasks= Task::with('client')->get();

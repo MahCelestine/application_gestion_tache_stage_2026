@@ -18,10 +18,26 @@ class Task extends Model
         'quote_number',
         'billing_info',
         'estimated_hours',
+        'actual_hours',
         'is_paid'
     ];
 
-    public function clients() 
+    public function getCompteurTempsAttribute() 
+    {
+        $diff= $this->estimated_hours - $this->actual_hours;
+
+        if($diff > 0) {
+            return "Gain : {$diff} H";
+        }
+        elseif ($diff = 0) {
+            return "OK";
+        }
+        else {
+            return "Perte:" . abs(diff) . "H";
+        }
+    }
+
+    public function client() 
     {
         return $this->belongsTo(Client::class);
     }
