@@ -14,4 +14,9 @@ class Equipe extends Model
     {
         return $this->belongsToMany(Task::class);
     }
+
+    public function subtacks()
+    {
+        return $this->belongsToMany(Subtask::class, 'equipe_subtask');
+    }
 }

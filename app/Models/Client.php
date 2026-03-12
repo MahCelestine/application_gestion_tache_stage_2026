@@ -10,6 +10,8 @@ class Client extends Model
     /** @use HasFactory<\Database\Factories\ClientFactory> */
     use HasFactory;
 
+    protected $fillable = ['nom'];
+
     public function tasks() 
     {
         return $this->hasMany(Task::class);

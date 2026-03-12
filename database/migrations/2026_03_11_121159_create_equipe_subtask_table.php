@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->decimal('actual_hours')->default(0)->after('estimated_hours');
+        Schema::create('equipe_subtask', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('subtask_id')->constrained()->onDelete('cascade');
+            $table->foreignId('equipe_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('equipe_subtask');
     }
 };

@@ -29,11 +29,11 @@ class Task extends Model
         if($diff > 0) {
             return "Gain : {$diff} H";
         }
-        elseif ($diff = 0) {
+        elseif ($diff == 0) {
             return "OK";
         }
         else {
-            return "Perte:" . abs(diff) . "H";
+            return "Perte:" . abs($diff) . "H";
         }
     }
 
@@ -45,5 +45,10 @@ class Task extends Model
     public function equipes()
     {
         return $this->belongsToMany(Equipe::class);
+    }
+
+    public function subtasks()
+    {
+        return $this->hasMany(Subtask::class);
     }
 }
