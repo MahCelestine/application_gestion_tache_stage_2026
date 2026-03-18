@@ -1,0 +1,27 @@
+.text-bloque {
+    color: #dc3545 !important;
+}
+
+.text-en-cours {
+    color: #f39c12 !important;
+}
+
+.text-valide {
+    color: #28a745 !important;
+}
+
+.cell-bloque {
+    background-color: rgba(231, 60, 80, 0.7) !important;
+    color: #fff !important;
+    border-radius: 15px;
+}
+
+.cell-en-cours {
+    color: #f39c12 !important;
+}
+
+.cell-valide {
+    color: rgba(20, 184, 64, 0.7) !important;
+    color: #fff !important;
+    border-radius: 15px;
+}

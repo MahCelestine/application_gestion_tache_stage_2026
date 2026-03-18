@@ -101,7 +101,6 @@ class TaskController extends Controller
             'equipe_ids' => 'nullable|array',
         ];
 
-        // On n'ajoute la validation du status que s'il n'y a PAS de sous-tâches
         if (!$hasSubtasks) {
             $rules['status'] = 'required|in:en cours,validé,bloqué';
             $rules['hours_to_add'] = 'nullable|numeric';
@@ -110,17 +109,13 @@ class TaskController extends Controller
 
         $validated = $request->validate($rules);
 
-        // 2. SÉCURITÉ : Empêcher la validation manuelle si des sous-tâches sont encore actives
         if (!$hasSubtasks && $validated['status'] === 'validé') {
-            // (Cette sécurité est plus utile si vous aviez des sous-tâches, 
-            // mais on la garde par cohérence avec votre logique précédente)
             $allSubtaskNonValide = $task->subtasks()->where('status', '!=', 'validé')->count();
             if ($allSubtaskNonValide > 0) {
                 return back()->withErrors(['status' => 'Impossible de valider : des sous-tâches sont encore en cours.'])->withInput();
             }
         }
 
-        // 3. PRÉPARATION DES DONNÉES DE BASE
         $updateData = [
             'label' => $validated['label'],
             'estimated_hours' => $validated['estimated_hours'],
@@ -130,13 +125,10 @@ class TaskController extends Controller
             'client_id' => $validated['client_id'],
         ];
 
-        // 4. LOGIQUE SELON LA PRÉSENCE DE SOUS-TÂCHES
         if (!$hasSubtasks) {
-            // --- CAS SANS SOUS-TÂCHES (Gestion Manuelle) ---
             $updateData['status'] = $validated['status'];
             $updateData['actual_hours'] = $task->actual_hours + ($request->hours_to_add ?? 0);
 
-            // Gestion des raisons de blocage
             if ($validated['status'] === 'bloqué') {
                 $currentBlocking = $task->currentBlocking();
                 $description = $validated['reason_description'];
@@ -148,21 +140,15 @@ class TaskController extends Controller
                 }
             }
 
-            // Si on passe de bloqué à autre chose, on ferme la raison
             if ($task->status === 'bloqué' && $validated['status'] !== 'bloqué') {
                 $task->reasons()->where('is_finish', false)->update(['is_finish' => true]);
             }
         } else {
-            // --- CAS AVEC SOUS-TÂCHES (Gestion Automatique) ---
-            // On ne touche pas au 'status', il reste celui calculé par les sous-tâches
-            // On recalcule le temps total basé sur les enfants
             $updateData['actual_hours'] = $task->subtasks()->sum('actual_hours');
         }
 
-        // 5. SAUVEGARDE FINALE
         $task->update($updateData);
 
-        // Synchronisation des équipes (Table Pivot)
         $task->equipes()->sync($request->equipe_ids ?? []);
 
         return redirect()->route('tasks.index')->with('success', 'Tâche mise à jour avec succès.');
@@ -177,17 +163,101 @@ class TaskController extends Controller
         return redirect()->route('tasks.index');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::with(['client', 'equipes', 'subtasks' => function ($query) {
-                $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
-                    ->orderBy('due_date', 'asc')
-                    ->with('equipes');
-            }])
-            ->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
-            ->orderBy('due_date', 'asc')
-            ->get();
 
-        return view('tasks.index', compact('tasks'));
+        $sortTask = $request->input('sort_task');
+        $sortSubtask = $request->input('sort_subtask');
+        $sortClient = $request->input('sort_client');
+        $filterStatus = $request->input('filter_status');
+        $search = $request->input('search');
+
+        $query = Task::select('tasks.*')->with([
+            'client',
+            'equipes',
+            'subtasks' => function ($query) use ($sortSubtask, $filterStatus, $search) {
+                if ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('subtasks.label', 'LIKE', "%{$search}%")
+                            ->orWhereHas('equipes', function ($equipe) use ($search) {
+                                $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
+                                    ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                            })
+                            ->orWhereHas('task', function ($parent) use ($search) {
+                                $parent->where('tasks.label', 'LIKE', "%{$search}%")
+                                    ->orWhereHas('client', function ($client) use ($search) {
+                                        $client->where('clients.nom', 'LIKE', "%{$search}%");
+                                    });
+                            });
+                    });
+                }
+                if ($filterStatus) {
+                    $query->where('subtasks.status', $filterStatus);
+                }
+
+                $query->orderBy('due_date', 'asc')->with('equipes');
+
+            }
+        ]);
+
+
+        if ($search) {
+            $query->where(function ($q) use ($search, $filterStatus) {
+                $q->where('tasks.label', 'LIKE', "%{$search}%")
+                    ->orWhereHas('client', function ($cq) use ($search) {
+                        $cq->where('clients.nom', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('equipes', function ($equipe) use ($search) {
+                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
+                            ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('subtasks', function ($sq) use ($search, $filterStatus) {
+                        $sq->where(function ($sub) use ($search) {
+                            $sub->where('subtasks.label', 'LIKE', "%{$search}%")
+                                ->orWhereHas('equipes', function ($equipe) use ($search) {
+                                    $equipe->where('equipes.nom', 'LIKE', "%{$search}%")
+                                        ->orWhere('equipes.prenom', 'LIKE', "%{$search}%");
+                                });
+                        });
+                    if ($filterStatus) {
+                        $sq->where('subtasks.status', $filterStatus);
+                    }
+
+                    });
+            });
+        }
+
+        if ($filterStatus) {
+            $query->where(function ($q) use ($filterStatus, $search) {
+                $q->where('tasks.status', $filterStatus)
+                ->orWhereHas('subtasks', function($sq) use ($filterStatus, $search) {
+                    $sq->where('subtasks.status', $filterStatus);
+                    if ($search) {
+                        $sq->where(function($sub) use ($search) {
+                            $sub->where('subtasks.label', 'LIKE', "%{$search}%")
+                            ->orWhereHas('equipes', function($seq) use ($search) {
+                                $seq->where('prenom', 'LIKE', "%{$search}%")
+                                ->orWhere('nom', 'LIKE', "%{$search}%");
+                            });
+                        });
+                    }
+                });
+            });
+        }
+
+        if ($sortClient) {
+            $query->select('tasks.*')
+                ->join('clients', 'tasks.client_id', '=', 'clients.id')
+                ->orderBy('clients.nom', $sortClient);
+        } elseif ($sortTask) {
+            $query->orderBy('label', $sortTask);
+        } else {
+            $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
+                ->orderBy('due_date', 'asc');
+        }
+
+        $tasks = $query->get();
+
+        return view('tasks.index', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'filterStatus', 'search'));
     }
 }

@@ -31,7 +31,7 @@ class Subtask extends Model
         } elseif ($diff == 0) {
             return "OK";
         } else {
-            return "Perte:" . abs($diff) . "H";
+            return "Perte : " . abs($diff) . " H";
         }
     }
 

@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <title>Ca Com'mence Aujourd'hui - Gestionnaire de tâche</title>
 </head>
 <body>
     <nav>
-        <a href="/"> test </a>
+        <a href="/"> Accueil </a>
     </nav>
 
     <main>

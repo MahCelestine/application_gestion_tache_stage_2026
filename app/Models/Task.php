@@ -33,7 +33,7 @@ class Task extends Model
             return "OK";
         }
         else {
-            return "Perte:" . abs($diff) . "H";
+            return "Perte : " . abs($diff) . " H";
         }
     }
 
