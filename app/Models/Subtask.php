@@ -35,13 +35,23 @@ class Subtask extends Model
         }
     }
 
+    public function currentBlocking()
+    {
+        return $this->reasons()->where('is_finish', false)->latest()->first();
+    }
+
     public function task()
     {
         return $this->belongsTo(Task::class);
     }
 
-    public function equipes() 
+    public function equipes()
     {
         return $this->belongsToMany(Equipe::class, 'equipe_subtask');
+    }
+
+    public function reasons()
+    {
+        return $this->morphMany(Reason::class, 'raisonable');
     }
 }

@@ -2,6 +2,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
+    <a href="{{ route('tasks.index') }}"><</a>
     <form method="POST" action="{{ route('subtasks.store') }}">
         @csrf
         <input type="hidden" name="task_id" value="{{ request('task_id') }}">

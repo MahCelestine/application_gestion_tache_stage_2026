@@ -37,6 +37,11 @@ class Task extends Model
         }
     }
 
+    public function currentBlocking()
+    {
+        return $this->reasons()->where('is_finish', false)->latest()->first();
+    }
+
     public function client() 
     {
         return $this->belongsTo(Client::class);
@@ -50,5 +55,10 @@ class Task extends Model
     public function subtasks()
     {
         return $this->hasMany(Subtask::class);
+    }
+
+    public function reasons()
+    {
+        return $this->morphMany(Reason::class, 'raisonable');
     }
 }
