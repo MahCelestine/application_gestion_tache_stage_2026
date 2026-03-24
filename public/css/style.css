@@ -13,7 +13,8 @@
 .cell-bloque {
     background-color: rgba(231, 60, 80, 0.7) !important;
     color: #fff !important;
-    border-radius: 15px;
+    border-radius: 999px;
+    padding: 6%;
 }
 
 .cell-en-cours {
@@ -24,4 +25,22 @@
     color: rgba(20, 184, 64, 0.7) !important;
     color: #fff !important;
     border-radius: 15px;
+}
+
+.task-group-border {
+    display: table-row-group;
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.1),
+        0 4px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 0px 0px 15px 15px;
+}
+
+.task-group-border td {
+    padding-left: 10px;
+    padding-bottom: 10px;
+}
+
+table {
+    border-separate: separate;
+    border-spacing: 0 15px;
 }

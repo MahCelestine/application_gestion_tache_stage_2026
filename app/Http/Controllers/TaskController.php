@@ -11,17 +11,23 @@ class TaskController extends Controller
 {
     public function store(Request $request)
     {
+
         $validated = $request->validate([
             'label' => 'required',
-            'estimated_hours' => 'required|numeric',
+            'estimated_h' => 'required|numeric|min:0',
+            'estimated_m' => 'required|numeric|min:0|max:59',
             'due_date' => 'required|date',
             'quote_number' => 'nullable|string|max:100',
             'billing_info' => 'nullable|string|max:100',
-
             'equipe_ids' => 'nullable|array',
-
             'client_id' => 'required_without:new_client_name|nullable|exists:clients,id',
             'new_client_name' => 'required_without:client_id|nullable|string|max:255',
+
+            'subtasks' => 'nullable|array',
+            'subtasks.*.label' => 'required|string',
+            'subtasks.*.due_date' => 'required|date',
+            'subtasks.*.estimated_h' => 'required|numeric|min:0',
+            'subtasks.*.estimated_m' => 'required|numeric|min:0|max:59',
         ]);
 
         $clientId = $request->client_id;
@@ -34,13 +40,17 @@ class TaskController extends Controller
         }
         ;
 
+        $isCCA = ($request->input('context') === 'cca');
+        $estimatedHours = $request->input('estimated_h') + ($request->input('estimated_m') / 60);
+
         $task = Task::create([
             'label' => $validated['label'],
             'client_id' => $clientId,
-            'estimated_hours' => $validated['estimated_hours'],
+            'is_paid' => $isCCA,
+            'estimated_hours' => $estimatedHours,
             'due_date' => $validated['due_date'],
-            'quote_number' => $validated['quote_number'],
-            'billing_info' => $validated['billing_info'],
+            'quote_number' => $isCCA ? 'INTERNE' : ($validated['quote_number'] ?? null),
+            'billing_info' => $isCCA ? 'OFFERT' : ($validated['billing_info'] ?? null),
             'actual_hours' => 0,
         ]);
 
@@ -51,10 +61,11 @@ class TaskController extends Controller
 
         if ($request->has('subtasks')) {
             foreach ($request->subtasks as $subtaskData) {
+                $subtaskEstimated = (float)$subtaskData['estimated_h'] + ((float)$subtaskData['estimated_m'] / 60);
                 $subtask = $task->subtasks()->create([
                     'label' => $subtaskData['label'],
                     'due_date' => $subtaskData['due_date'],
-                    'estimated_hours' => $subtaskData['estimated_hours'],
+                    'estimated_hours' => $subtaskEstimated,
                     'quote_number' => $subtaskData['quote_number'] ?? null,
                     'billing_info' => $subtaskData['billing_info'] ?? null,
                     'actual_hours' => 0,
@@ -66,14 +77,17 @@ class TaskController extends Controller
             }
         }
 
-        return redirect()->route('tasks.index');
+        $redirectRoute = $request->input('redirect_to', 'tasks.index');
+        return redirect()->route($redirectRoute);
     }
 
     public function create()
     {
         $equipes = Equipe::all();
         $clients = Client::all();
-        return view('tasks.form_task', compact('clients', 'equipes'));
+
+        $clientCCA = Client::where('nom', 'CCA')->first();
+        return view('tasks.form_task', compact('clients', 'equipes', 'clientCCA'));
     }
 
     public function edit($id)
@@ -90,10 +104,8 @@ class TaskController extends Controller
         $task = Task::findOrFail($id);
         $hasSubtasks = $task->subtasks()->count() > 0;
 
-        // 1. VALIDATION DYNAMIQUE
         $rules = [
             'label' => 'required|string|max:255',
-            'estimated_hours' => 'required|numeric',
             'due_date' => 'required|date',
             'quote_number' => 'nullable|string',
             'billing_info' => 'nullable|string',
@@ -103,11 +115,20 @@ class TaskController extends Controller
 
         if (!$hasSubtasks) {
             $rules['status'] = 'required|in:en cours,validé,bloqué';
-            $rules['hours_to_add'] = 'nullable|numeric';
+            $rules['estimated_h'] = 'required|numeric|min:0';
+            $rules['estimated_m'] = 'required|numeric|min:0|max:59';
+            $rules['add_actual_h'] = 'nullable|numeric|min:0';
+            $rules['add_actual_m'] = 'nullable|numeric|min:0|max:59';
             $rules['reason_description'] = ($request->status === 'bloqué') ? 'required|string' : 'nullable|string';
         }
 
         $validated = $request->validate($rules);
+
+        if (!$hasSubtasks) {
+            $newEstimated = $request->input('estimated_h', 0) + ($request->input('estimated_m', 0) / 60);
+            $hoursToAdd = $request->input('add_actual_h', 0) + ($request->input('add_actual_m', 0) / 60);
+            $newActual = $task->actual_hours + $hoursToAdd;
+        }
 
         if (!$hasSubtasks && $validated['status'] === 'validé') {
             $allSubtaskNonValide = $task->subtasks()->where('status', '!=', 'validé')->count();
@@ -115,19 +136,27 @@ class TaskController extends Controller
                 return back()->withErrors(['status' => 'Impossible de valider : des sous-tâches sont encore en cours.'])->withInput();
             }
         }
+        if (!$hasSubtasks) {
+            $newEstimated = $request->input('estimated_h', 0) + ($request->input('estimated_m', 0) / 60);
+            $hoursToAdd = $request->input('add_actual_h', 0) + ($request->input('add_actual_m', 0) / 60);
+            $newActual = $task->actual_hours + $hoursToAdd;
+        } else {
+            $newEstimated = $task->subtasks()->sum('estimated_hours');
+            $newActual = $task->subtasks()->sum('actual_hours');
+        }
 
         $updateData = [
             'label' => $validated['label'],
-            'estimated_hours' => $validated['estimated_hours'],
+            'estimated_hours' => $newEstimated,
+            'actual_hours' => $newActual,
             'due_date' => $validated['due_date'],
-            'quote_number' => $validated['quote_number'],
-            'billing_info' => $validated['billing_info'],
+            'quote_number' => $subtaskData['quote_number'] ?? null,
+            'billing_info' => $subtaskData['billing_info'] ?? null,
             'client_id' => $validated['client_id'],
         ];
 
         if (!$hasSubtasks) {
             $updateData['status'] = $validated['status'];
-            $updateData['actual_hours'] = $task->actual_hours + ($request->hours_to_add ?? 0);
 
             if ($validated['status'] === 'bloqué') {
                 $currentBlocking = $task->currentBlocking();
@@ -143,24 +172,24 @@ class TaskController extends Controller
             if ($task->status === 'bloqué' && $validated['status'] !== 'bloqué') {
                 $task->reasons()->where('is_finish', false)->update(['is_finish' => true]);
             }
-        } else {
-            $updateData['actual_hours'] = $task->subtasks()->sum('actual_hours');
         }
 
         $task->update($updateData);
 
         $task->equipes()->sync($request->equipe_ids ?? []);
+        $redirectRoute = $request->input('redirect_to', 'tasks.index');
 
-        return redirect()->route('tasks.index')->with('success', 'Tâche mise à jour avec succès.');
+        return redirect()->route($redirectRoute);
     }
 
-    public function destroy(Task $task)
+    public function destroy(Request $request, Task $task)
     {
         $task->equipes()->detach();
         $task->subtasks()->delete();
         $task->delete();
 
-        return redirect()->route('tasks.index');
+        $route = $request->input('redirect_to', 'tasks.index');
+        return redirect()->route($route);
     }
 
     public function index(Request $request)
@@ -172,7 +201,13 @@ class TaskController extends Controller
         $filterStatus = $request->input('filter_status');
         $search = $request->input('search');
 
-        $query = Task::select('tasks.*')->with([
+        $query = Task::select('tasks.*');
+
+        $query->whereHas('client', function ($q) {
+            $q->where('nom', '!=', 'CCA');
+        });
+
+        $query->with([
             'client',
             'equipes',
             'subtasks' => function ($query) use ($sortSubtask, $filterStatus, $search) {
@@ -186,7 +221,8 @@ class TaskController extends Controller
                             ->orWhereHas('task', function ($parent) use ($search) {
                                 $parent->where('tasks.label', 'LIKE', "%{$search}%")
                                     ->orWhereHas('client', function ($client) use ($search) {
-                                        $client->where('clients.nom', 'LIKE', "%{$search}%");
+                                        $client->where('clients.nom', 'LIKE', "%{$search}%")
+                                            ->where('clients.nom', '!=', 'CCA');
                                     });
                             });
                     });
@@ -195,7 +231,9 @@ class TaskController extends Controller
                     $query->where('subtasks.status', $filterStatus);
                 }
 
-                $query->orderBy('due_date', 'asc')->with('equipes');
+                $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
+                    ->orderBy('due_date', 'asc')
+                    ->with('equipes');
 
             }
         ]);
@@ -205,7 +243,8 @@ class TaskController extends Controller
             $query->where(function ($q) use ($search, $filterStatus) {
                 $q->where('tasks.label', 'LIKE', "%{$search}%")
                     ->orWhereHas('client', function ($cq) use ($search) {
-                        $cq->where('clients.nom', 'LIKE', "%{$search}%");
+                        $cq->where('clients.nom', 'LIKE', "%{$search}%")
+                            ->where('clients.nom', '!=', 'CCA');
                     })
                     ->orWhereHas('equipes', function ($equipe) use ($search) {
                         $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
@@ -219,9 +258,9 @@ class TaskController extends Controller
                                         ->orWhere('equipes.prenom', 'LIKE', "%{$search}%");
                                 });
                         });
-                    if ($filterStatus) {
-                        $sq->where('subtasks.status', $filterStatus);
-                    }
+                        if ($filterStatus) {
+                            $sq->where('subtasks.status', $filterStatus);
+                        }
 
                     });
             });
@@ -230,18 +269,18 @@ class TaskController extends Controller
         if ($filterStatus) {
             $query->where(function ($q) use ($filterStatus, $search) {
                 $q->where('tasks.status', $filterStatus)
-                ->orWhereHas('subtasks', function($sq) use ($filterStatus, $search) {
-                    $sq->where('subtasks.status', $filterStatus);
-                    if ($search) {
-                        $sq->where(function($sub) use ($search) {
-                            $sub->where('subtasks.label', 'LIKE', "%{$search}%")
-                            ->orWhereHas('equipes', function($seq) use ($search) {
-                                $seq->where('prenom', 'LIKE', "%{$search}%")
-                                ->orWhere('nom', 'LIKE', "%{$search}%");
+                    ->orWhereHas('subtasks', function ($sq) use ($filterStatus, $search) {
+                        $sq->where('subtasks.status', $filterStatus);
+                        if ($search) {
+                            $sq->where(function ($sub) use ($search) {
+                                $sub->where('subtasks.label', 'LIKE', "%{$search}%")
+                                    ->orWhereHas('equipes', function ($seq) use ($search) {
+                                        $seq->where('prenom', 'LIKE', "%{$search}%")
+                                            ->orWhere('nom', 'LIKE', "%{$search}%");
+                                    });
                             });
-                        });
-                    }
-                });
+                        }
+                    });
             });
         }
 
@@ -259,5 +298,94 @@ class TaskController extends Controller
         $tasks = $query->get();
 
         return view('tasks.index', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'filterStatus', 'search'));
+    }
+
+    public function indexCCA(Request $request)
+    {
+
+        $sortTask = $request->input('sort_task');
+        $sortSubtask = $request->input('sort_subtask');
+        $sortClient = $request->input('sort_client');
+        $filterStatus = $request->input('filter_status');
+        $search = $request->input('search');
+
+        $query = Task::whereHas('client', function ($q) {
+            $q->where('nom', 'CCA');
+        })->with([
+                    'client',
+                    'equipes',
+                    'subtasks' => function ($query) use ($sortSubtask, $filterStatus, $search) {
+                        if ($search) {
+                            $query->where(function ($q) use ($search) {
+                                $q->where('subtasks.label', 'LIKE', "%{$search}%")
+                                    ->orWhereHas('equipes', function ($equipe) use ($search) {
+                                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
+                                            ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                                    });
+                            });
+                        }
+                        if ($filterStatus) {
+                            $query->where('subtasks.status', $filterStatus);
+                        }
+
+                        $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
+                            ->orderBy('due_date', 'asc')
+                            ->with('equipes');
+
+                    }
+                ]);
+
+
+        if ($search) {
+            $query->where(function ($q) use ($search, $filterStatus) {
+                $q->where('tasks.label', 'LIKE', "%{$search}%")
+                    ->orWhereHas('equipes', function ($equipe) use ($search) {
+                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
+                            ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('subtasks', function ($sq) use ($search, $filterStatus) {
+                        $sq->where(function ($sub) use ($search) {
+                            $sub->where('subtasks.label', 'LIKE', "%{$search}%")
+                                ->orWhereHas('equipes', function ($equipe) use ($search) {
+                                    $equipe->where('equipes.nom', 'LIKE', "%{$search}%")
+                                        ->orWhere('equipes.prenom', 'LIKE', "%{$search}%");
+                                });
+                        });
+                        if ($filterStatus) {
+                            $sq->where('subtasks.status', $filterStatus);
+                        }
+
+                    });
+            });
+        }
+
+        if ($filterStatus) {
+            $query->where(function ($q) use ($filterStatus, $search) {
+                $q->where('tasks.status', $filterStatus)
+                    ->orWhereHas('subtasks', function ($sq) use ($filterStatus, $search) {
+                        $sq->where('subtasks.status', $filterStatus);
+                        if ($search) {
+                            $sq->where(function ($sub) use ($search) {
+                                $sub->where('subtasks.label', 'LIKE', "%{$search}%")
+                                    ->orWhereHas('equipes', function ($seq) use ($search) {
+                                        $seq->where('prenom', 'LIKE', "%{$search}%")
+                                            ->orWhere('nom', 'LIKE', "%{$search}%");
+                                    });
+                            });
+                        }
+                    });
+            });
+        }
+
+        if ($sortTask) {
+            $query->orderBy('label', $sortTask);
+        } else {
+            $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
+                ->orderBy('due_date', 'asc');
+        }
+
+        $tasks = $query->get();
+
+        return view('tasks.index_cca', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'filterStatus', 'search'));
     }
 }

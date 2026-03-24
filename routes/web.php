@@ -13,6 +13,7 @@ Route::get('/tasks/create', [TaskController::class, 'create']) ->name('tasks.cre
 Route::get('/subtasks/create', [SubtaskController::class, 'create']) ->name('subtasks.create');
 Route::get('/tasks/{task}/edit', [TaskController::class, 'edit']) ->name('tasks.edit');
 Route::get('/subtasks/{subtask}/edit', [SubtaskController::class, 'edit'])->name('subtasks.edit');
+Route::get('/projet_cca', [TaskController::class, 'indexCCA'])->name('tasks.cca');
 
 Route::post('/tasks', [TaskController::class, 'store']) ->name('tasks.store');
 Route::post('/subtasks', [SubtaskController::class, 'store']) ->name('subtasks.store');

@@ -2,16 +2,27 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
-    <a href="{{ route('tasks.index') }}"><</a>
+    <a href="{{ route('tasks.index') }}">hghghgh</a>
     <form action="{{ route('tasks.store') }}" method="POST">
         @csrf
-        <div>
-            <label>Client *</label>
+        @php
+            $isCCA = request('context') === 'cca';
+        @endphp
+        <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
+        @if($isCCA)
+            <input type="hidden" name="context" value="cca">
+            <input type="hidden" name="client_id" value="{{ $clientCCA->id ?? '' }}">
             <div>
-                <label>Ajouter un nouveau client</label>
-                <input type="text" name="new_client_name" placeholder="Nom du client" />
+                <label>Client</label>
+                <p><strong>CCA</strong></p>
             </div>
+        @else
             <div>
+                <label>Client *</label>
+                <div>
+                    <label>Ajouter un nouveau client</label>
+                    <input type="text" name="new_client_name" placeholder="Nom du client" />
+                </div>
                 <label>Client existant</label>
                 <select name="client_id">
                     <option value="" selected>Choisir un client...</option>
@@ -20,6 +31,7 @@
                     @endforeach
                 </select>
             </div>
+        @endif
         </div>
         <div>
             <label>Grande tâche *</label>
@@ -40,17 +52,19 @@
         </div>
         <div>
             <label>Temps donné *</label>
-            <input type="number" name="estimated_hours" placeholder="Le nombre d'heure donnée pour cette tâche"
-                required />
+            <input type="number" name="estimated_h" min="0" required /><span>h</span>
+            <input type="number" name="estimated_m" min="0" max="29" required /> <span>min</span>
         </div>
-        <div>
-            <label>N° Devis</label>
-            <input type="text" name="quote_number" placeholder="Le numéro de devis" />
-        </div>
-        <div>
-            <label>Facturation</label>
-            <input type="text" name="billing_info" placeholder="Le numéro de facturation" />
-        </div>
+        @if (!$isCCA)
+            <div>
+                <label>N° Devis</label>
+                <input type="text" name="quote_number" placeholder="Le numéro de devis" />
+            </div>
+            <div>
+                <label>Facturation</label>
+                <input type="text" name="billing_info" placeholder="Le numéro de facturation" />
+            </div>
+        @endif
         <div id="subtasks-container"></div>
 
         <button type="button" id="add-subtask-btn" style="margin: 10px 0;">
@@ -58,34 +72,34 @@
         </button>
         <template id="subtask-template">
             <div class="subtask-row">
-            <div>
-                <label>Sous tâche *</label>
-                <input type="text" name="subtasks[INDEX][label]" placeholder="Intitulé" required />
-            </div>
-            <div>
-                <label>Delai *</label>
-                <input type="date" name="subtasks[INDEX][due_date]" required />
-            </div>
-            <div>
-                <label>Temps donné *</label>
-                <input type="number" name="subtasks[INDEX][estimated_hours]" placeholder="Le nombre d'heures"
-                    required />
-            </div>
-            <div>
-                <label>N° Devis</label>
-                <input type="text" name="subtasks[INDEX][quote_number]" placeholder="N° Devis" />
-            </div>
-            <div>
-                <label>Facturation</label>
-                <input type="text" name="subtasks[INDEX][billing_info]" placeholder="Facturation" />
-            </div>
-            <label>Assignation :</label>
-            <select name="subtasks[INDEX][equipe_ids][]" multiple class="select-equipes-dynamic">
-                @foreach ($equipes as $equipe)
-                    <option value="{{ $equipe->id }}">{{ $equipe->prenom }} {{ $equipe->nom }}</option>
-                @endforeach
-            </select>
-            <button type="button" onclick="this.closest('.subtask-row').remove()">Supprimer</button>
+                <div>
+                    <label>Sous tâche *</label>
+                    <input type="text" name="subtasks[INDEX][label]" placeholder="Intitulé" required />
+                </div>
+                <div>
+                    <label>Delai *</label>
+                    <input type="date" name="subtasks[INDEX][due_date]" required />
+                </div>
+                <div>
+                    <label>Temps donné *</label>
+                    <input type="number" name="subtasks[INDEX][estimated_h]" min="0" required /><span>h</span>
+                    <input type="number" name="subtasks[INDEX][estimated_m]" min="0" max="59" required /><span>min</span>
+                </div>
+                <div>
+                    <label>N° Devis</label>
+                    <input type="text" name="subtasks[INDEX][quote_number]" placeholder="N° Devis" />
+                </div>
+                <div>
+                    <label>Facturation</label>
+                    <input type="text" name="subtasks[INDEX][billing_info]" placeholder="Facturation" />
+                </div>
+                <label>Assignation :</label>
+                <select name="subtasks[INDEX][equipe_ids][]" multiple class="select-equipes-dynamic">
+                    @foreach ($equipes as $equipe)
+                        <option value="{{ $equipe->id }}">{{ $equipe->prenom }} {{ $equipe->nom }}</option>
+                    @endforeach
+                </select>
+                <button type="button" onclick="this.closest('.subtask-row').remove()">Supprimer</button>
             </div>
         </template>
         <small>Veuillez remplir tout les champs avec *</small>
@@ -103,8 +117,8 @@
         const template = document.getElementById('subtask-template');
         const btn = document.getElementById('add-subtask-btn');
 
-        btn.addEventListener('click' , function () {
-            const clone = template.content.cloneNode(true) ;
+        btn.addEventListener('click', function () {
+            const clone = template.content.cloneNode(true);
 
             const id = subtaskIndex++;
             clone.querySelectorAll('[name*="INDEX"]').forEach(el => {
@@ -116,9 +130,9 @@
             const newSelect = container.lastElementChild.querySelector('.select-equipes-dynamic');
             if (newSelect) {
                 new TomSelect(newSelect, {
-                plugins: ['remove_button'],
-                create: false
-            });
+                    plugins: ['remove_button'],
+                    create: false
+                });
             }
         });
     </script>

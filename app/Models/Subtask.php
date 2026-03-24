@@ -22,17 +22,29 @@ class Subtask extends Model
         'is_paid'
     ];
 
+    public function formatDuration($decimalHours)
+    {
+        // On force en float pour être sûr, et on gère le cas vide/null/zero
+        $decimalHours = (float) $decimalHours;
+
+        if ($decimalHours <= 0) {
+            return "0h00";
+        }
+
+        $hours = floor($decimalHours);
+        $minutes = round(($decimalHours - $hours) * 60);
+
+        return $hours . "h" . str_pad($minutes, 2, '0', STR_PAD_LEFT);
+    }
     public function getCompteurTempsAttribute()
     {
         $diff = $this->estimated_hours - $this->actual_hours;
 
-        if ($diff > 0) {
-            return "Gain : {$diff} H";
-        } elseif ($diff == 0) {
+        if ($diff == 0)
             return "OK";
-        } else {
-            return "Perte : " . abs($diff) . " H";
-        }
+
+        $prefix = $diff > 0 ? "Gain : " : "Perte : ";
+        return $prefix . $this->formatDuration(abs($diff));
     }
 
     public function currentBlocking()

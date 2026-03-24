@@ -15,19 +15,23 @@ class SubtaskController extends Controller
             'task_id' => 'required|exists:tasks,id',
             'label' => 'required|string|max:255',
             'due_date' => 'required|date',
-            'estimated_hours' => 'required|numeric',
+            'estimated_h' => 'required|numeric|min:0',
+            'estimated_m' => 'required|numeric|min:0|max:59',
             'quote_number' => 'nullable|string',
             'billing_info' => 'nullable|string',
             'equipe_ids' => 'nullable|array',
         ]);
 
+        $isCCA = ($request->input('context') === 'cca');
+        $estimated = (float) $request->input('estimated_h') + ((float) $request->input('estimated_m') / 60);
+
         $subtask = Subtask::create([
             'task_id' => $validated['task_id'],
             'label' => $validated['label'],
             'due_date' => $validated['due_date'],
-            'estimated_hours' => $validated['estimated_hours'],
-            'quote_number' => $validated['quote_number'],
-            'billing_info' => $validated['billing_info'],
+            'estimated_hours' => $estimated,
+            'quote_number' => $isCCA ? 'INTERNE' : ($validated['quote_number'] ?? null),
+            'billing_info' => $isCCA ? 'OFFERT' : ($validated['billing_info'] ?? null),
             'actual_hours' => 0,
         ]);
 
@@ -36,15 +40,14 @@ class SubtaskController extends Controller
         }
 
         $parentTask = $subtask->task;
-        $TotalSubtasksEstimatedHours = $parentTask->subtasks()->sum('estimated_hours');
-
-        if ($TotalSubtasksEstimatedHours > $parentTask->estimated_hours) {
+        if ($parentTask) {
             $parentTask->update([
-                'estimated_hours' => $TotalSubtasksEstimatedHours
+                'estimated_hours' => $parentTask->subtasks()->sum('estimated_hours')
             ]);
         }
 
-        return redirect()->route('tasks.index');
+        $redirect = $request->input('redirect_to', 'task.index');
+        return redirect()->route($redirect);
     }
 
     public function edit($id)
@@ -63,8 +66,10 @@ class SubtaskController extends Controller
             'label' => 'required|string|max:255',
             'status' => 'required|in:en cours,validé,bloqué',
             'reason_description' => 'nullable|string|required_if:status,bloqué',
-            'estimated_hours' => 'required|numeric',
-            'hours_to_add' => 'nullable|numeric',
+            'estimated_h' => 'required|numeric|min:0',
+            'estimated_m' => 'required|numeric|min:0|max:59',
+            'add_actual_h' => 'nullable|numeric|min:0',
+            'add_actual_m' => 'nullable|numeric|min:0|max:59',
             'due_date' => 'required|date',
             'quote_number' => 'nullable|string',
             'billing_info' => 'nullable|string',
@@ -85,24 +90,28 @@ class SubtaskController extends Controller
                 ]);
             }
         }
-        $newTotalHours = $subtask->actual_hours + ($request->hours_to_add ?? 0);
+        $newEstimated = $validated['estimated_h'] + ($validated['estimated_m'] / 60);
+        $decimalToAdd = ($request->input('add_actual_h', 0)) + ($request->input('add_actual_m', 0) / 60);
+        $newActualTotal = $subtask->actual_hours + $decimalToAdd;
+
+        $isCCA = ($request->input('context') === 'cca');
+
 
         $subtask->update([
             'status' => $validated['status'],
             'label' => $validated['label'],
-            'estimated_hours' => $validated['estimated_hours'],
+            'estimated_hours' => $newEstimated,
+            'actual_hours' => $newActualTotal,
             'due_date' => $validated['due_date'],
-            'quote_number' => $validated['quote_number'],
-            'billing_info' => $validated['billing_info'],
-            'actual_hours' => $newTotalHours,
+            'quote_number' => $isCCA ? 'INTERNE' : $validated['quote_number'] ?? null,
+            'billing_info' => $isCCA ? 'OFFERT' : $validated['billing_info'] ?? null,
         ]);
 
         $parentTask = $subtask->task;
-        $remainingSubtasks = $parentTask->subtasks()->where('status', '!=', 'validé')->count();
-        $TotalActualHours = $parentTask->subtasks()->sum('actual_hours');
 
         $parentTask->update([
-            'actual_hours' => $TotalActualHours
+            'actual_hours' => $parentTask->subtasks()->sum('actual_hours'),
+            'estimated_hours' => $parentTask->subtasks()->sum('estimated_hours')
         ]);
 
         if (Carbon::parse($parentTask->due_date)->lt(Carbon::parse($subtask->due_date))) {
@@ -126,7 +135,8 @@ class SubtaskController extends Controller
 
         $subtask->equipes()->sync($request->equipe_ids ?? []);
 
-        return redirect()->route('tasks.index');
+        $redirect = $request->input('redirect_to', 'task.index');
+        return redirect()->route($redirect);
     }
 
     public function create()
@@ -135,7 +145,7 @@ class SubtaskController extends Controller
         return view('tasks.form_subtask', compact('equipes'));
     }
 
-    public function destroy(Subtask $subtask)
+    public function destroy(Request $request, Subtask $subtask)
     {
         $parentTask = $subtask->task;
 
@@ -149,6 +159,7 @@ class SubtaskController extends Controller
             ]);
         }
 
-        return redirect()->route('tasks.index');
+        $route = $request->input('redirect_to', 'tasks.index');
+        return redirect()->route($route);
     }
 }

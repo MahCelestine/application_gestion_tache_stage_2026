@@ -9,7 +9,7 @@ class Task extends Model
 {
     /** @use HasFactory<\Database\Factories\TaskFactory> */
     use HasFactory;
-    
+
     protected $fillable = [
         'client_id',
         'label',
@@ -22,19 +22,38 @@ class Task extends Model
         'is_paid'
     ];
 
-    public function getCompteurTempsAttribute() 
+    public function formatDuration($decimalHours)
     {
-        $diff= $this->estimated_hours - $this->actual_hours;
+        // On force en float pour être sûr, et on gère le cas vide/null/zero
+        $decimalHours = (float) $decimalHours;
 
-        if($diff > 0) {
-            return "Gain : {$diff} H";
+        if ($decimalHours <= 0) {
+            return "0h00";
         }
-        elseif ($diff == 0) {
+
+        $hours = floor($decimalHours);
+        $minutes = round(($decimalHours - $hours) * 60);
+
+        return $hours . "h" . str_pad($minutes, 2, '0', STR_PAD_LEFT);
+    }
+    public function getCompteurTempsAttribute()
+    {
+        $diff = $this->estimated_hours - $this->actual_hours;
+
+        if ($diff == 0)
             return "OK";
-        }
-        else {
-            return "Perte : " . abs($diff) . " H";
-        }
+
+        $prefix = $diff > 0 ? "Gain : " : "Perte : ";
+        return $prefix . $this->formatDuration(abs($diff));
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($task) {
+            if (request()->routeIs('cca.*')) {
+                $task->is_paid = true;
+            }
+        });
     }
 
     public function currentBlocking()
@@ -42,7 +61,7 @@ class Task extends Model
         return $this->reasons()->where('is_finish', false)->latest()->first();
     }
 
-    public function client() 
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }
