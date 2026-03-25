@@ -78,7 +78,7 @@
                             <input type="number" name="estimated_h" min="0" required
                                 class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" /><span>
                                 h</span>
-                            <input type="number" name="estimated_m" min="0" max="29" required
+                            <input type="number" name="estimated_m" min="0" max="59" required
                                 class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                             <span>min</span>
                         </div>
