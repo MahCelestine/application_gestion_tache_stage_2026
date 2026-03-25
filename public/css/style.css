@@ -44,3 +44,22 @@ table {
     border-separate: separate;
     border-spacing: 0 15px;
 }
+
+.ts-wrapper.multi .ts-control {
+    border: 2px solid #D1D5DB !important;
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.ts-wrapper.multi.focus .ts-control {
+    border-color: #9CA3AF !important;
+    outline: none !important;
+}
+
+.ts-wrapper.multi .ts-control>div {
+    background-color: #F3F4F6 !important;
+    border-radius: 4px !important;
+    color: #374151 !important;
+}

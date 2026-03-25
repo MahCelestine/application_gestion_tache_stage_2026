@@ -10,18 +10,29 @@
 </head>
 
 <body class="w-[96%] mx-auto py-6 font-montserrat text-gray-900">
+    @php
+        $hasSideContent = (isset($searchBar) && $searchBar->isNotEmpty()) || (isset($ajoutTache) && $ajoutTache->isNotEmpty());
+    @endphp
     <div class="w-full flex justify-between items-center mb-8">
-        <div class="mr-4 basis-2/5">{{ $searchBar ?? '' }}</div>
-        <nav class="mx-2 basis-2/5 flex justify-between text-lg">
+        @if($hasSideContent)
+            <div class="mr-4 basis-2/5 empty:hidden flex-1">{{ $searchBar ?? '' }}</div>
+        @endif
+        <nav @class([
+            'mx-2 basis-2/5 flex justify-between text-lg flex-1' => $hasSideContent,
+            'flex w-full justify-center gap-12 text-lg mt-3' => !$hasSideContent,
+        ])>
             <a href="/" class="font-semibold hover:font-normal hover:tracking-wide">Accueil</a>
             <a href="/projet_cca" class="font-semibold hover:font-normal hover:tracking-wide">Projet CCA</a>
             <a href="/" class="font-semibold hover:font-normal hover:tracking-wide">Gestion</a>
             <a href="/" class="font-semibold hover:font-normal hover:tracking-wide">Prospect</a>
-            <a href="{{ route('filament.admin.pages.dashboard') }}" class="btn font-semibold hover:font-normal hover:tracking-wide">
-            Administration
+            <a href="{{ route('filament.admin.pages.dashboard') }}"
+                class="btn font-semibold hover:font-normal hover:tracking-wide">
+                Administration
             </a>
         </nav>
-        <div class="ml-4 basis-1/5 justify-end flex">{{ $ajoutTache ?? 'Bouton de création de tâche' }}</div>
+        @if ($hasSideContent)
+            <div class="ml-4 basis-1/5 justify-end flex empty:hidden flex-1">{{ $ajoutTache ?? '' }}</div>
+        @endif
     </div>
 
     <main>

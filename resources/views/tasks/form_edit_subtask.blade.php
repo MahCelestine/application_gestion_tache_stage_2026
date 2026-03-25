@@ -2,7 +2,6 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
-    <a href="{{ route('tasks.index') }}">ggvg</a>
     <form action="{{ route('subtasks.update', $subtask->id) }}" method="POST">
         @csrf
         @php
@@ -10,64 +9,115 @@
         @endphp
         <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
         @method('PUT')
-        <div>
-            <label>Tâche</label>
-            <input type="text" name="label" value="{{ $subtask->label }}" required />
-        </div>
-        <div>
-            <label>Assignation</label>
-            <select id="select-equipes" name="equipe_ids[]" multiple>
-                @foreach ($equipes as $equipe)
-                    <option value="{{ $equipe->id }}" {{ $subtask->equipes->contains($equipe->id) ? 'selected' : '' }}>
-                        {{ $equipe->prenom }} {{ $equipe->nom }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label>Délai *</label>
-            <input type="date" name="due_date" value="{{ $subtask->due_date }}" required />
-        </div>
-        <div>
-            <label>Temps donné</label>
-            @php
-                $hours = floor($subtask->estimated_hours);
-                $minutes = round(($subtask->estimated_hours - $hours) * 60);
-            @endphp
-            <input type="number" name="estimated_h" value="{{ $hours }}" min="0" required /> <span>h</span>
-            <input type="number" name="estimated_m" value="{{ $minutes }}" min="0" max="59" required /> <span>min</span>
-        </div>
-        <div>
-            <label>Temps réel cumulé : {{ $subtask->formatDuration($subtask->actual_hours) }} h</label>
-            <label>Ajouter du temps</label>
-            <input type="number" name="add_actual_h" value="" min="0"><span>h</span>
-            <input type="number" name="add_actual_m" value="" min="0" max="59"><span>min</span>
-        </div>
-        @if (!$isCCA)
-            <div>
-                <label>N° Devis</label>
-                <input type="text" name="quote_number" placeholder="Le numéro de devis" />
-            </div>
-            <div>
-                <label>Facturation</label>
-                <input type="text" name="billing_info" placeholder="Le numéro de facturation" />
-            </div>
-        @endif
-        <div>
-            <label>État de la tâche</label>
-            <select name="status" id="status-select" onchange="toggleReasonField()" required>
-                <option value="en cours" {{ $subtask->status == 'en cours' ? 'selected' : '' }}>En cours</option>
-                <option value="bloqué" {{ $subtask->status == 'bloqué' ? 'selected' : '' }}>Bloqué</option>
-                <option value="validé" {{ $subtask->status == 'validé' ? 'selected' : '' }}>Validé</option>
-            </select>
-        </div>
-        <div id="reason-container" style="display: {{ $subtask->status == 'bloqué' ? 'block' : 'none' }}">
-            <label>Raison du blocage *</label>
-            <textarea name="reason_description" id="reason_description"
-                placeholder="Expliquez le problème...">{{ $subtask->status == 'bloqué' && $subtask->currentBlocking() ? $subtask->currentBlocking()->description : '' }}</textarea>
-        </div>
+        <div class="border-2 border-gray-300 rounded-xl shadow-md mb-8">
+            <h2 class="text-2xl mx-6 my-6">Modifier une sous-tâche</h2>
+            <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
+            <div class="flex my-6">
+                <div class="basis-2/4 mx-5">
+                    <div class="flex flex-col mb-6">
+                        <label class="text-xl font-semibold">Sous-tâche</label>
+                        <input type="text" name="label" value="{{ $subtask->label }}" required
+                            class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-xl font-semibold">Assignation (plusieurs choix possible)</label>
+                        <select id="select-equipes" name="equipe_ids[]" multiple
+                            class="w-[90%] text-lg mt-4 text-gray-600 font-mono">
+                            @foreach ($equipes as $equipe)
+                                <option value="{{ $equipe->id }}" {{ $subtask->equipes->contains($equipe->id) ? 'selected' : '' }}>
+                                    {{ $equipe->prenom }} {{ $equipe->nom }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="basis-1/4 mx-5">
+                    <div class="flex flex-col mb-6">
+                        <label class="text-xl font-semibold">Délai *</label>
+                        <input type="date" name="due_date" value="{{ $subtask->due_date }}" required
+                            class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-xl font-semibold">Temps donné *</label>
+                        @php
+                            $hours = floor($subtask->estimated_hours);
+                            $minutes = round(($subtask->estimated_hours - $hours) * 60);
+                        @endphp
+                        <div>
+                            <input type="number" name="estimated_h" value="{{ $hours }}" min="0" required
+                                class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                            <span>h</span>
+                            <input type="number" name="estimated_m" value="{{ $minutes }}" min="0" max="59" required
+                                class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                            <span>min</span>
+                        </div>
+                    </div>
+                </div>
 
-        <button type="submit">Enregistrer les modifications</button>
+                @if (!$isCCA)
+                    <div class="basis-1/4 mx-5">
+                        <div class="flex flex-col mb-6">
+                            <label class="text-xl font-semibold">N° Devis</label>
+                            <input type="text" name="quote_number" placeholder="Le numéro de devis"
+                                class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xl font-semibold">Facturation</label>
+                            <input type="text" name="billing_info" placeholder="Le numéro de facturation"
+                                class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+        <div class="border-2 border-gray-300 rounded-xl shadow-md">
+            <h2 class="text-2xl mx-6 my-6">État de la sous tâche</h2>
+            <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
+            <div class="flex my-6">
+                <div class="basis-2/4 mx-5">
+                    <div class="flex flex-col">
+                        <label class="text-xl font-semibold">État *</label>
+                        <select name="status" id="status-select" onchange="toggleReasonField()" required
+                            class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">
+                            <option value="en cours" {{ $subtask->status == 'en cours' ? 'selected' : '' }}>En cours
+                            </option>
+                            <option value="bloqué" {{ $subtask->status == 'bloqué' ? 'selected' : '' }}>Bloqué</option>
+                            <option value="validé" {{ $subtask->status == 'validé' ? 'selected' : '' }}>Validé</option>
+                        </select>
+                    </div>
+                    <div id="reason-container" style="display: {{ $subtask->status == 'bloqué' ? 'block' : 'none' }}">
+                        <div class="flex flex-col mt-6">
+                            <label class="text-xl font-semibold">Raison du blocage *</label>
+                            <textarea name="reason_description" id="reason_description"
+                                placeholder="Expliquez le problème..."
+                                class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">{{ $subtask->status == 'bloqué' && $subtask->currentBlocking() ? $subtask->currentBlocking()->description : '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="basis-1/4">
+                    <label class="text-xl font-semibold">Temps réel cumulé :
+                        {{ $subtask->formatDuration($subtask->actual_hours) }}</label>
+                    <div class="flex flex-col mt-2">
+                        <label class="text-xl">Ajouter du temps</label>
+                        <div>
+                            <input type="number" name="add_actual_h" value="" min="0"
+                                class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                h</span>
+                            <input type="number" name="add_actual_m" value="" min="0" max="59"
+                                class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col">
+            <small class="text-base my-2 mx-6">* Champs obligatoires</small>
+            <button type="submit"
+                class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto">Enregistrer
+                les
+                modifications</button>
+        </div>
     </form>
 
     <form action="{{ route('subtasks.destroy', $subtask->id) }}" method="POST"
@@ -75,7 +125,8 @@
         @csrf
         @method('DELETE')
         <input type="hidden" name="redirect_to" value="tasks.cca" />
-        <button type="button" onclick="confirmDeleteSubtask({{ $subtask->id }})">Supprimer la
+        <button type="button" onclick="confirmDeleteSubtask({{ $subtask->id }})"
+            class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg">Supprimer la
             sous-tâche</button>
     </form>
 

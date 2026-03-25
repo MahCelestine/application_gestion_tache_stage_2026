@@ -20,8 +20,8 @@ class TaskController extends Controller
             'quote_number' => 'nullable|string|max:100',
             'billing_info' => 'nullable|string|max:100',
             'equipe_ids' => 'nullable|array',
-            'client_id' => 'required_without:new_client_name|nullable|exists:clients,id',
-            'new_client_name' => 'required_without:client_id|nullable|string|max:255',
+            'client_id' => 'required_without:new_client_name|nullable|exists:clients,id|prohibits:new_client_name',
+            'new_client_name' => 'required_without:client_id|nullable|string|max:255|prohibits:client_id',
 
             'subtasks' => 'nullable|array',
             'subtasks.*.label' => 'required|string',
@@ -61,7 +61,7 @@ class TaskController extends Controller
 
         if ($request->has('subtasks')) {
             foreach ($request->subtasks as $subtaskData) {
-                $subtaskEstimated = (float)$subtaskData['estimated_h'] + ((float)$subtaskData['estimated_m'] / 60);
+                $subtaskEstimated = (float) $subtaskData['estimated_h'] + ((float) $subtaskData['estimated_m'] / 60);
                 $subtask = $task->subtasks()->create([
                     'label' => $subtaskData['label'],
                     'due_date' => $subtaskData['due_date'],
@@ -231,9 +231,14 @@ class TaskController extends Controller
                     $query->where('subtasks.status', $filterStatus);
                 }
 
-                $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
-                    ->orderBy('due_date', 'asc')
-                    ->with('equipes');
+                if ($sortSubtask) {
+                    $query->orderBy('label', $sortSubtask);
+                } else {
+                    $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
+                        ->orderBy('due_date', 'asc');
+                }
+
+                $query->with('equipes');
 
             }
         ]);
@@ -328,9 +333,14 @@ class TaskController extends Controller
                             $query->where('subtasks.status', $filterStatus);
                         }
 
-                        $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
-                            ->orderBy('due_date', 'asc')
-                            ->with('equipes');
+                        if ($sortSubtask) {
+                            $query->orderBy('label', $sortSubtask);
+                        } else {
+                            $query->orderByRaw("FIELD(status, 'bloqué', 'en cours', 'validé')")
+                                ->orderBy('due_date', 'asc');
+                        }
+
+                        $query->with('equipes');
 
                     }
                 ]);

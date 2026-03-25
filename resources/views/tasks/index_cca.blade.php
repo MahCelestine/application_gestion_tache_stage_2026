@@ -1,30 +1,17 @@
 <x-layout>
-    <a href="{{ route('tasks.create', ['context' => 'cca']) }}"> + Ajouter une grande tache</a>
-    <div>
-        <p>Filtrer par état :</p>
-        @if ($filterStatus)
-            <a href="{{ request()->fullUrlWithQuery(['filter_status' => null]) }}">Réinitialiser les filtres</a>
-        @endif
-        <a href="{{ request()->fullUrlWithQuery(['filter_status' => 'bloqué']) }}">Bloqués</a>
-        <a href="{{ request()->fullUrlWithQuery(['filter_status' => 'en cours']) }}">En cours</a>
-        <a href="{{ request()->fullUrlWithQuery(['filter_status' => 'validé']) }}">Validés</a>
-    </div>
-    <div>
-        <form action="{{ route('tasks.cca') }}" method="GET">
-            @csrf
-            @if($filterStatus) <input type="hidden" name="filter_status" value="{{ $filterStatus }}" />@endif
-            @if($sortClient) <input type="hidden" name="sort_client" value="{{ $sortClient }}" />@endif
-            @if($sortTask) <input type="hidden" name="sort_task" value="{{ $sortTask }}" />@endif
-
-            <input type="text" name="search" value="{{ $search }}"
-                placeholder="Tâche, sous-tâche ou une assignation..." />
-            <button type="submit">Search</button>
-        </form>
-    </div>
-    <table>
-        <thead>
+    <x-slot:ajoutTache>
+        <a href="{{ route('tasks.create', ['context' => 'cca']) }}"
+            class="text-lg bg-blue-500 py-3 px-6 rounded-4xl text-white hover:bg-blue-600 shadow-md/20"> + Ajouter une
+            grande tâche</a>
+    </x-slot:ajoutTache>
+    <x-filtrage-etat />
+    <x-slot:searchBar>
+        <x-search-bar :route="route('tasks.cca')" />
+    </x-slot:searchBar>
+    <table class="w-[100%] border-separate border-spacing-y-4">
+        <thead class="text-lg">
             <tr>
-                <th>
+                <th class="py-6 rounded-tl-3xl border-t-2 border-b-2 border-l-2 border-gray-300">
                     @php
                         $nextClientSort = match ($sortClient) {
                             'asc' => 'desc',
@@ -42,7 +29,7 @@
                     <a href="{{ request()->fullUrlWithQuery(['sort_client' => $nextClientSort]) }}">
                         {{ $arrowClient }}</a>
                 </th>
-                <th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">
                     @php
                         $nextTaskSort = match ($sortTask) {
                             'asc' => 'desc',
@@ -59,7 +46,7 @@
                     <a href="{{ request()->fullUrlWithQuery(['sort_task' => $nextTaskSort]) }}">Grande tâche</a>
                     <a href="{{ request()->fullUrlWithQuery(['sort_task' => $nextTaskSort]) }}"> {{ $arrowTask }}</a>
                 </th>
-                <th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">
                     @php
                         $nextSubtaskSort = match ($sortSubtask) {
                             'asc' => 'desc',
@@ -73,43 +60,60 @@
                             default => '',
                         };
                     @endphp
-                    <a href="{{ request()->fullUrlWithQuery(['sort_subtask' => $nextSubtaskSort]) }}">Sous tâche</a>
+                    <a href="{{ request()->fullUrlWithQuery(['sort_subtask' => $nextSubtaskSort]) }}">Sous-tâche</a>
                     <a href="{{ request()->fullUrlWithQuery(['sort_subtask' => $nextSubtaskSort]) }}">
                         {{ $arrowSubtask }}</a>
                 </th>
-                <th>Etat</th>
-                <th>Assignation</th>
-                <th>Delai</th>
-                <th>Temps donné</th>
-                <th>Temps réel</th>
-                <th>Compteur temps</th>
-                <th></th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">État</th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">Assignation</th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">Délai</th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">Temps donné</th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">Temps réel</th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300">Compteur temps</th>
+                <th class="py-6 border-t-2 border-b-2 border-gray-300"></th> 
+        <th class="py-6 border-t-2 border-b-2 border-gray-300"></th>
+                <th class="py-6 rounded-tr-3xl border-t-2 border-b-2 border-r-2 border-gray-300"></th>
             </tr>
         </thead>
-        <tbody>
-            @foreach ($tasks as $task)
-                @if ($task->status !== 'validé' || $filterStatus || $search)
-                    <tr>
-                        <td>{{ $task->client->nom }}</td>
-                        <td>{{ $task->label }}</td>
-                        <td></td>
-                        <td class="cell-{{ Str::slug($task->status) }}">{{ $task->status }}
-                            @if($task->status === 'bloqué' && $task->currentBlocking() && $task->subtasks->count() === 0)
-                                <button type="button" onclick="toggleReason('reason-task-{{ $task->id }}')">↓</button>
-                            @endif
+        @foreach ($tasks as $task)
+            @if ($task->status !== 'validé' || $filterStatus || $search)
+                <tbody class="task-group-border shadow-md">
+                    <tr class="h-2">
+                        <td colspan="12"></td>
+                    </tr>
+                    <tr class="text-lg">
+                        <td class="border-r-[15px] border-r-transparent">{{ $task->client->nom }}</td>
+                        <td class="border-r-[15px] border-r-transparent">{{ $task->label }}</td>
+                        <td class="border-r-[15px] border-r-transparent"></td>
+                        <td class="text-center">
+                            <span class="cell-{{ Str::slug($task->status) }}">{{ $task->status }}
+                                @if($task->status === 'bloqué' && $task->currentBlocking() && $task->subtasks->count() === 0)
+                                    <button type="button" onclick="toggleReason('reason-task-{{ $task->id }}')">↓</button>
+                                @endif
+                            </span>
                         </td>
-                        <td>
+                        <td class="border-r-[15px] border-r-transparent">
                             @forelse ($task->equipes as $membre)
-                                {{ $membre->prenom }} {{ $membre->nom }}
+                                {{ $membre->prenom }}
                             @empty
                                 -
                             @endforelse
                         </td>
-                        <td>{{ \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') }}</td>
-                        <td>{{ $task->formatDuration($task->estimated_hours) }}</td>
-                        <td>{{ $task->formatDuration($task->actual_hours) }}</td>
-                        <td>{{ $task->compteur_temps }}</td>
-                        <td><a href="{{ route('tasks.edit', ['task' => $task->id, 'context' => 'cca']) }}">Modifier</a></td>
+                        @php
+                            $dueDate = \Carbon\Carbon::parse($task->due_date);
+                            $isUrgent = $dueDate->lte(now()->addDays(7));
+                        @endphp
+                        <td style="{{ $isUrgent ? 'color: #dc3545' : '' }}"
+                            class="text-center ">
+                            {{ $dueDate->format('d/m/Y') }}
+                        </td>
+                        <td class="text-center">
+                            {{ $task->formatDuration($task->estimated_hours) }}</td>
+                        <td class="text-center">
+                            {{ $task->formatDuration($task->actual_hours) }}</td>
+                        <td class="text-center">{{ $task->compteur_temps }}</td>
+                        <td class="text-center"><a
+                                href="{{ route('tasks.edit', ['task' => $task->id, 'context' => 'cca']) }}" class="text-blue-500 hover:text-blue-600 hover:font-semibold">Modifier</a></td>
                     </tr>
                     @if($task->status === 'bloqué' && $blocking = $task->currentBlocking())
                         <tr id="reason-task-{{ $task->id }}" style="display: none;">
@@ -119,29 +123,41 @@
                             <td colspan="2"></td>
                         </tr>
                     @endif
-
+                    <tr>
+                        <td></td>
+                        <td colspan="10" class="py-1">
+                            <div class="border-b-2 border-gray-300 w-full"></div>
+                        </td>
+                        <td></td>
+                    </tr>
                     @foreach ($task->subtasks as $subtask)
                         <tr>
                             <td></td>
-                            <td><a href="{{ route('subtasks.edit', ['subtask' => $subtask->id, 'context' => 'cca']) }}">Modifier</a>
+                            <td><a href="{{ route('subtasks.edit', ['subtask' => $subtask->id, 'context' => 'cca']) }}" class="text-blue-500 hover:text-blue-600 hover:font-semibold">Modifier</a>
                             </td>
                             <td>{{ $subtask->label }}</td>
-                            <td class="text-{{ Str::slug($subtask->status) }}">{{ $subtask->status }}
+                            <td class="text-{{ Str::slug($subtask->status) }} text-center">{{ $subtask->status }}
                                 @if($subtask->status === 'bloqué')
                                     <button type="button" onclick="toggleReason('reason-sub-{{ $subtask->id }}')">↓</button>
                                 @endif
                             </td>
                             <td>
                                 @forelse ($subtask->equipes as $membre)
-                                    {{ $membre->prenom }}{{ $membre->nom }}
+                                    {{ $membre->prenom }}
                                 @empty
                                     -
                                 @endforelse
                             </td>
-                            <td>{{ \Carbon\Carbon::parse($subtask->due_date)->format('d/m/Y') }}</td>
-                            <td>{{ $subtask->formatDuration($subtask->estimated_hours) }}</td>
-                            <td>{{ $subtask->formatDuration($subtask->actual_hours) }}</td>
-                            <td>{{ $subtask->compteur_temps }}</td>
+                            @php
+                                $dueDate = \Carbon\Carbon::parse($subtask->due_date);
+                                $isUrgent = $dueDate->lte(now()->addDays(7));
+                            @endphp
+                            <td style="{{ $isUrgent ? 'color: #dc3545' : '' }}" class="text-center">
+                                {{ $dueDate->format('d/m/Y') }}
+                            </td>
+                            <td class="text-center">{{ $subtask->formatDuration($subtask->estimated_hours) }}</td>
+                            <td class="text-center">{{ $subtask->formatDuration($subtask->actual_hours) }}</td>
+                            <td class="text-center">{{ $subtask->compteur_temps }}</td>
                         </tr>
                         @if($subtask->status === 'bloqué' && $blocking = $subtask->currentBlocking())
                             <tr id="reason-sub-{{ $subtask->id }}" style="display: none;">
@@ -152,17 +168,14 @@
                             </tr>
                         @endif
                     @endforeach
-
                     <tr>
                         <td colspan="2"></td>
-                        <td colspan="9"><a href="{{ route('subtasks.create', ['task_id' => $task->id, 'context' => 'cca']) }}">+
-                                Ajouter une sous
-                                tâche</a></td>
+                        <td colspan="9"><a href="{{ route('subtasks.create', ['task_id' => $task->id, 'context' => 'cca']) }}"
+                                class="text-blue-500 hover:text-blue-600 hover:font-semibold">+ Ajouter une sous-tâche</a></td>
                     </tr>
-                @endif
-            @endforeach
-
-        </tbody>
+                </tbody>
+            @endif
+        @endforeach
     </table>
 
     <script>
