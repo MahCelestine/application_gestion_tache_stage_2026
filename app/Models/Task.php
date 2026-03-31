@@ -22,6 +22,10 @@ class Task extends Model
         'is_paid'
     ];
 
+    protected $casts = [
+        'is_paid' => 'boolean',
+    ];
+
     public function formatDuration($decimalHours)
     {
         // On force en float pour être sûr, et on gère le cas vide/null/zero

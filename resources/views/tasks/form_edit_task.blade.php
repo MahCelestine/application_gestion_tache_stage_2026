@@ -172,7 +172,7 @@
     <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" id="delete-form-{{ $task->id }}">
         @csrf
         @method('DELETE')
-        <input type="hidden" name="redirect_to" value="tasks.cca" />
+        <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
         <button type="button" onclick="confirmDelete({{ $task->id }})"
             class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg">Supprimer la tâche</button>
     </form>

@@ -71,6 +71,11 @@
                         <label class="text-xl font-semibold">Délai *</label>
                         <input type="date" name="due_date" required
                             class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+
+                        <p id="date-error-msg" class="text-red-500 font-semibold mt-2 hidden">
+                            Attention : Une ou plusieurs sous-tâches ont une date postérieure à celle de la grande
+                            tâche.
+                        </p>
                     </div>
                     <div class="flex flex-col">
                         <label class="text-xl font-semibold">Temps donné *</label>
@@ -97,6 +102,9 @@
                                 class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                         </div>
                     </div>
+                @else
+                    <input type="hidden" name="quote_number" value="INTERNE">
+                    <input type="hidden" name="billing_info" value="OFFERT">
                 @endif
             </div>
         </div>
@@ -160,6 +168,9 @@
                                         class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                                 </div>
                             </div>
+                        @else
+                            <input type="hidden" name="subtasks[INDEX][quote_number]" value="INTERNE">
+                            <input type="hidden" name="subtasks[INDEX][billing_info]" value="OFFERT">
                         @endif
                     </div>
 
@@ -175,6 +186,7 @@
         </div>
     </form>
 
+
     <script>
         new TomSelect("#select-equipes", {
             plugins: ['remove_button'],
@@ -188,8 +200,8 @@
 
         btn.addEventListener('click', function () {
             const clone = template.content.cloneNode(true);
-
             const id = subtaskIndex++;
+
             clone.querySelectorAll('[name*="INDEX"]').forEach(el => {
                 el.name = el.name.replace('INDEX', id);
             });
@@ -203,6 +215,8 @@
                     create: false
                 });
             }
+
+            validateAllDates();
         });
 
         const newClientInput = document.getElementById('new_client_name');
@@ -211,25 +225,117 @@
         const submitBtn = document.querySelector('button[type="submit"]');
 
         function checkClientSelection() {
-            const hasNew = newClientInput.value.trim() !== "";
-            const hasExisting = existingClientSelect.value !== "";
+            const hasNew = newClientInput ? newClientInput.value.trim() !== "" : false;
+            const hasExisting = existingClientSelect ? existingClientSelect.value !== "" : false;
 
             if (hasNew && hasExisting) {
                 errorMsg.classList.remove('hidden');
-                newClientInput.classList.add('border-red-500');
-                existingClientSelect.classList.add('border-red-500');
+                if (newClientInput) newClientInput.classList.add('border-red-500');
+                if (existingClientSelect) existingClientSelect.classList.add('border-red-500');
                 submitBtn.disabled = true;
                 submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 errorMsg.classList.add('hidden');
-                newClientInput.classList.remove('border-red-500');
-                existingClientSelect.classList.remove('border-red-500');
+                if (newClientInput) newClientInput.classList.remove('border-red-500');
+                if (existingClientSelect) existingClientSelect.classList.remove('border-red-500');
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        newClientInput.addEventListener('input', checkClientSelection);
-        existingClientSelect.addEventListener('change', checkClientSelection);
+        if (newClientInput) newClientInput.addEventListener('input', checkClientSelection);
+        if (existingClientSelect) existingClientSelect.addEventListener('change', checkClientSelection);
+
+        const parentDateInput = document.querySelector('input[name="due_date"]');
+        const dateErrorMsg = document.getElementById('date-error-msg');
+
+        const parentHoursInput = document.querySelector('input[name="estimated_h"]');
+        const parentMinutesInput = document.querySelector('input[name="estimated_m"]');
+
+
+        function syncAllData() {
+            const parentDateValue = parentDateInput.value;
+            let globalError = false;
+
+            if (parentDateValue) {
+                const parentDate = new Date(parentDateValue);
+                const subtaskDateInputs = document.querySelectorAll('input[name^="subtasks"][name$="[due_date]"]');
+
+                subtaskDateInputs.forEach((input) => {
+                    if (input.value) {
+                        const subDate = new Date(input.value);
+
+                        if (subDate > parentDate) {
+                            input.classList.add('border-red-500');
+                            input.classList.remove('border-gray-300');
+                            globalError = true;
+                        } else {
+                            input.classList.remove('border-red-500');
+                            input.classList.add('border-gray-300');
+                        }
+                    }
+                });
+            }
+
+            if (globalError) {
+                parentDateInput.classList.add('border-red-500');
+                parentDateInput.classList.remove('border-gray-300');
+                dateErrorMsg.classList.remove('hidden');
+            } else {
+                parentDateInput.classList.remove('border-red-500');
+                parentDateInput.classList.add('border-gray-300');
+                dateErrorMsg.classList.add('hidden');
+            }
+
+            const subtaskRows = document.querySelectorAll('.subtask-row');
+
+            if (subtaskRows.length > 0) {
+                let totalMinutesSubtasks = 0;
+
+                subtaskRows.forEach(row => {
+                    const h = parseInt(row.querySelector('input[name$="[estimated_h]"]').value) || 0;
+                    const m = parseInt(row.querySelector('input[name$="[estimated_m]"]').value) || 0;
+                    totalMinutesSubtasks += (h * 60) + m;
+                });
+
+                const newH = Math.floor(totalMinutesSubtasks / 60);
+                const newM = totalMinutesSubtasks % 60;
+
+                if (parentHoursInput) parentHoursInput.value = newH;
+                if (parentMinutesInput) parentMinutesInput.value = newM;
+            }
+
+            return globalError;
+        }
+
+        container.addEventListener('input', function (e) {
+            if (e.target && (e.target.type === 'date' || e.target.type === 'number')) {
+                syncAllData();
+            }
+        });
+
+        container.addEventListener('click', function (e) {
+            if (e.target.classList.contains('bg-red-500')) {
+                const row = e.target.closest('.subtask-row');
+                if (row) {
+                    row.remove();
+                    syncAllData();
+                }
+            }
+        });
+
+        parentDateInput.addEventListener('change', syncAllData);
+
+
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const hasDateErrors = syncAllData();
+
+            const hasClientErrors = document.querySelectorAll('#new_client_name.border-red-500, #client_id_select.border-red-500').length > 0;
+
+            if (hasDateErrors || hasClientErrors) {
+                e.preventDefault();
+                alert("Veuillez corriger les champs en rouge avant de valider le formulaire.");
+            }
+        });
     </script>
 </x-layout>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Equipe;
+use App\Models\Task;
 use App\Models\Subtask;
 use Carbon\Carbon;
 
@@ -11,6 +12,8 @@ class SubtaskController extends Controller
 {
     public function store(Request $request)
     {
+        $parentTask = Task::findOrFail($request->task_id);
+
         $validated = $request->validate([
             'task_id' => 'required|exists:tasks,id',
             'label' => 'required|string|max:255',
@@ -24,6 +27,13 @@ class SubtaskController extends Controller
 
         $isCCA = ($request->input('context') === 'cca');
         $estimated = (float) $request->input('estimated_h') + ((float) $request->input('estimated_m') / 60);
+
+        $subtaskDate = Carbon::parse($validated['due_date']);
+        $parentDate = Carbon::parse($parentTask->due_date);
+
+        if ($subtaskDate->gt($parentDate)) {
+            $parentTask->update(['due_date' => $validated['due_date']]);
+        }
 
         $subtask = Subtask::create([
             'task_id' => $validated['task_id'],
@@ -39,7 +49,6 @@ class SubtaskController extends Controller
             $subtask->equipes()->sync($request->equipe_ids);
         }
 
-        $parentTask = $subtask->task;
         if ($parentTask) {
             $parentTask->update([
                 'estimated_hours' => $parentTask->subtasks()->sum('estimated_hours')
@@ -58,6 +67,13 @@ class SubtaskController extends Controller
         return view('tasks.form_edit_subtask', compact('subtask', 'equipes'));
     }
 
+    public function editGestion($id)
+    {
+        $subtask = Subtask::findOrFail($id);
+
+        return view('gestions.gestion_edit_subtask', compact('subtask'));
+    }
+
     public function update(Request $request, $id)
     {
         $subtask = Subtask::findOrFail($id);
@@ -70,6 +86,8 @@ class SubtaskController extends Controller
             'estimated_m' => 'required|numeric|min:0|max:59',
             'add_actual_h' => 'nullable|numeric|min:0',
             'add_actual_m' => 'nullable|numeric|min:0|max:59',
+            'reduce_actual_h' => 'nullable|numeric|min:0',
+            'reduce_actual_m' => 'nullable|numeric|min:0|max:59',
             'due_date' => 'required|date',
             'quote_number' => 'nullable|string',
             'billing_info' => 'nullable|string',
@@ -90,9 +108,14 @@ class SubtaskController extends Controller
                 ]);
             }
         }
+        $currentActualHours = $subtask->actual_hours;
         $newEstimated = $validated['estimated_h'] + ($validated['estimated_m'] / 60);
         $decimalToAdd = ($request->input('add_actual_h', 0)) + ($request->input('add_actual_m', 0) / 60);
-        $newActualTotal = $subtask->actual_hours + $decimalToAdd;
+        $decimalToReduce = ($request->input('reduce_actual_h', 0)) + ($request->input('reduce_actual_m', 0) / 60);
+        $newActualTotal = $currentActualHours + $decimalToAdd - $decimalToReduce;
+
+        $subtask->actual_hours = max(0, $newActualTotal);
+        $subtask->save();
 
         $isCCA = ($request->input('context') === 'cca');
 
@@ -108,11 +131,16 @@ class SubtaskController extends Controller
         ]);
 
         $parentTask = $subtask->task;
+        $maxSubtaskDate = $parentTask->subtasks()->max('due_date');
 
         $parentTask->update([
             'actual_hours' => $parentTask->subtasks()->sum('actual_hours'),
             'estimated_hours' => $parentTask->subtasks()->sum('estimated_hours')
         ]);
+
+        if ($maxSubtaskDate) {
+            $parentTask->update(['due_date' => $maxSubtaskDate]);
+        }
 
         if (Carbon::parse($parentTask->due_date)->lt(Carbon::parse($subtask->due_date))) {
             $parentTask->update(['due_date' => $subtask->due_date]);
@@ -139,6 +167,21 @@ class SubtaskController extends Controller
         return redirect()->route($redirect);
     }
 
+    public function updateGestion(Request $request, $id) 
+    {
+        $subtask = Subtask::findOrFail($id);
+
+        $validated = $request->validate([
+            'quote_number' => 'nullable|string',
+            'billing_info' => 'nullable|string',
+            'is_paid' => 'required|in:0,1',
+        ]);
+
+        $subtask->update($validated);
+
+        return redirect()->route('gestions.gestion');
+    }
+
     public function create()
     {
         $equipes = Equipe::all();
@@ -157,9 +200,15 @@ class SubtaskController extends Controller
                 'actual_hours' => $parentTask->subtasks()->sum('actual_hours'),
                 'estimated_hours' => $parentTask->subtasks()->sum('estimated_hours')
             ]);
+
+            $maxSubtaskDate = $parentTask->subtasks()->max('due_date');
+
+            if ($maxSubtaskDate) {
+                $parentTask->update(['due_date' => $maxSubtaskDate]);
+            }
         }
 
-        $route = $request->input('redirect_to', 'tasks.index');
-        return redirect()->route($route);
+        $redirect = $request->input('redirect_to', 'task.index');
+        return redirect()->route($redirect);
     }
 }

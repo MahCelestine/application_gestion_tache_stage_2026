@@ -98,14 +98,33 @@
                     <label class="text-xl font-semibold">Temps réel cumulé :
                         {{ $subtask->formatDuration($subtask->actual_hours) }}</label>
                     <div class="flex flex-col mt-2">
-                        <label class="text-xl">Ajouter du temps</label>
                         <div>
-                            <input type="number" name="add_actual_h" value="" min="0"
-                                class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
-                                h</span>
-                            <input type="number" name="add_actual_m" value="" min="0" max="59"
-                                class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
-                                min</span>
+                            <label class="text-xl">Ajouter du temps</label>
+                            <div>
+                                <input type="number" name="add_actual_h" value="" min="0"
+                                    class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                    h</span>
+                                <input type="number" name="add_actual_m" value="" min="0" max="59"
+                                    class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                    min</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="toggleCorrection('correction-actual-hour')"
+                            class="bg-gray-100 hover:bg-white border-1 border-gray-300 shadow-sm py-3 font-semibold rounded-lg w-[75%] mb-2">Corriger
+                            le
+                            temps
+                            cumulé</button>
+                        <div id="correction-actual-hour" style="display: none;">
+                            <label class="text-xl">Déduire du temps</label>
+                            <div>
+                                <input type="number" name="reduce_actual_h" value="" min="0"
+                                    class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                    h</span>
+                                <input type="number" name="reduce_actual_m" value="" min="0" max="59"
+                                    class="my-4 text-lg rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                    min</span>
+                            </div>
+                            <small class="text-base my-2">Les valeurs seront déduites du temps total</small>
                         </div>
                     </div>
                 </div>
@@ -124,7 +143,7 @@
         id="delete-subtask-form-{{ $subtask->id }}">
         @csrf
         @method('DELETE')
-        <input type="hidden" name="redirect_to" value="tasks.cca" />
+        <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
         <button type="button" onclick="confirmDeleteSubtask({{ $subtask->id }})"
             class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg">Supprimer la
             sous-tâche</button>
@@ -152,8 +171,22 @@
 
         document.addEventListener('DOMContentLoaded', toggleReasonField);
 
+        function toggleCorrection(id) {
+            const container = document.getElementById(id);
+            if (container) {
+                if (container.style.display === "none") {
+                    container.style.display = "block";
+                } else {
+                    container.querySelector('input[name="reduce_actual_h"]').value = "";
+                    container.querySelector('input[name="reduce_actual_m"]').value = "";
+                    container.style.display = "none"
+                }
+            }
+        }
+
+        document.addEventListener('')
+
         function confirmDeleteSubtask(id) {
-            // Ajoute un console.log pour vérifier que la fonction est bien appelée
             console.log("Tentative de suppression de la sous-tâche ID:", id);
 
             if (confirm("Êtes-vous sûr de vouloir supprimer cette sous-tâche ?")) {

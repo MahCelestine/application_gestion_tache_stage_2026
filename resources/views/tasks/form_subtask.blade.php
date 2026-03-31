@@ -63,6 +63,9 @@
                                 class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                         </div>
                     </div>
+                @else
+                <input type="hidden" name="quote_number" value="INTERNE">
+                <input type="hidden" name="billing_info" value="OFFERT">
                 @endif
             </div>
         </div>

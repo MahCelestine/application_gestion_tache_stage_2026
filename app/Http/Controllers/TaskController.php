@@ -99,6 +99,13 @@ class TaskController extends Controller
         return view('tasks.form_edit_task', compact('task', 'clients', 'equipes'));
     }
 
+    public function editGestion($id)
+    {
+        $task = Task::findOrFail($id);
+
+        return view('gestions.gestion_edit_task', compact('task'));
+    }
+
     public function update(Request $request, $id)
     {
         $task = Task::findOrFail($id);
@@ -180,6 +187,19 @@ class TaskController extends Controller
         $redirectRoute = $request->input('redirect_to', 'tasks.index');
 
         return redirect()->route($redirectRoute);
+    }
+
+    public function updateGestion(Request $request, Task $task) 
+    {
+        $validated = $request->validate([
+            'quote_number' => 'nullable|string',
+            'billing_info' => 'nullable|string',
+            'is_paid' => 'required|in:0,1',
+        ]);
+
+        $task->update($validated);
+
+        return redirect()->route('gestions.gestion');
     }
 
     public function destroy(Request $request, Task $task)
@@ -397,5 +417,56 @@ class TaskController extends Controller
         $tasks = $query->get();
 
         return view('tasks.index_cca', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'filterStatus', 'search'));
+    }
+
+    public function indexGestion(Request $request)
+    {
+        $sortTask = $request->input('sort_task');
+        $sortSubtask = $request->input('sort_subtask');
+        $sortClient = $request->input('sort_client');
+        $search = $request->input('search');
+
+        $query = Task::whereHas('client', fn($q) => $q->where('nom', '!=', 'CCA'));
+
+        $query->where(function ($q) {
+            $q->where('status', 'validé')
+            ->orWhereHas('subtasks', fn($sq) => $sq->where('status', 'validé'));
+        });
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('label', 'LIKE', "%{$search}%")
+                    ->orWhereHas('client', fn($cq) => $cq->where('nom', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('subtasks', fn($sq) => $sq->where('label', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        $query->with([
+            'client',
+            'subtasks' => function ($q) use ($search, $sortSubtask) {
+                $q->where('status', 'validé');
+                if ($search) {
+                    $q->where('label', 'LIKE', "%{$search}%");
+                }
+
+                if ($sortSubtask) {
+                    $q->orderBy('label', $sortSubtask);
+                }
+            }
+        ]);
+
+        if ($sortClient) {
+            $query->join('clients', 'tasks.client_id', '=', 'clients.id')
+                ->select('tasks.*')
+                ->orderBy('clients.nom', $sortClient);
+        } elseif ($sortTask) {
+            $query->orderBy('label', $sortTask);
+        } else {
+            $query->orderBy('updated_at', 'desc');
+        }
+
+        $tasks = $query->get();
+
+        return view('gestions.gestion', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'search'));
     }
 }
