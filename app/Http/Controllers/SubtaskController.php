@@ -167,12 +167,12 @@ class SubtaskController extends Controller
         return redirect()->route($redirect);
     }
 
-    public function updateGestion(Request $request, $id) 
+    public function updateGestion(Request $request, $id)
     {
         $subtask = Subtask::findOrFail($id);
 
         $validated = $request->validate([
-            'quote_number' => 'nullable|string',
+            'quote_number' => 'required|string',
             'billing_info' => 'nullable|string',
             'is_paid' => 'required|in:0,1',
         ]);
@@ -182,10 +182,33 @@ class SubtaskController extends Controller
         return redirect()->route('gestions.gestion');
     }
 
-    public function create()
+    public function resetEtat(Subtask $subtask)
+    {
+        $subtask->update([
+            'status' => 'en cours',
+            'is_paid' => 0,
+            'billing_info' => null,
+        ]);
+
+        $parentTask = $subtask->task;
+
+        if ($parentTask && $parentTask->status === 'validé') {
+            $parentTask->update([
+                'status' => 'en cours',
+                'is_paid' => 0,
+                'billing_info' => null,
+            ]);
+        }
+
+        return redirect()->route('gestions.gestion');
+    }
+
+    public function create(Request $request)
     {
         $equipes = Equipe::all();
-        return view('tasks.form_subtask', compact('equipes'));
+        $parentTask = Task::find($request->task_id);
+        
+        return view('tasks.form_subtask', compact('equipes', 'parentTask'));
     }
 
     public function destroy(Request $request, Subtask $subtask)

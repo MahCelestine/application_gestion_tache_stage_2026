@@ -17,6 +17,7 @@ Route::get('/gestions/task/{task}/edit', [TaskController::class, 'editGestion'])
 Route::get('/gestions/subtask/{subtask}/edit', [SubtaskController::class, 'editGestion'])->name('gestions.subtask_edit');
 Route::get('/projet_cca', [TaskController::class, 'indexCCA'])->name('tasks.cca');
 Route::get('/gestions', [TaskController::class, 'indexGestion'])->name('gestions.gestion');
+Route::get('/archives', [TaskController::class, 'indexArchive'])->name('archives.archive');
 
 Route::post('/tasks', [TaskController::class, 'store']) ->name('tasks.store');
 Route::post('/subtasks', [SubtaskController::class, 'store']) ->name('subtasks.store');
@@ -28,3 +29,5 @@ Route::put('/gestions/subtask/{subtask}', [SubtaskController::class, 'updateGest
 
 Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 Route::delete('/subtasks/{subtask}', [SubtaskController::class, 'destroy'])->name('subtasks.destroy');
+
+Route::patch('/gestions/subtask/{subtask}/reset', [SubtaskController::class, 'resetEtat'])->name('gestions.subtask_reset');

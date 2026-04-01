@@ -17,7 +17,7 @@ class TaskController extends Controller
             'estimated_h' => 'required|numeric|min:0',
             'estimated_m' => 'required|numeric|min:0|max:59',
             'due_date' => 'required|date',
-            'quote_number' => 'nullable|string|max:100',
+            'quote_number' => 'required|string|max:100',
             'billing_info' => 'nullable|string|max:100',
             'equipe_ids' => 'nullable|array',
             'client_id' => 'required_without:new_client_name|nullable|exists:clients,id|prohibits:new_client_name',
@@ -189,10 +189,10 @@ class TaskController extends Controller
         return redirect()->route($redirectRoute);
     }
 
-    public function updateGestion(Request $request, Task $task) 
+    public function updateGestion(Request $request, Task $task)
     {
         $validated = $request->validate([
-            'quote_number' => 'nullable|string',
+            'quote_number' => 'required|string',
             'billing_info' => 'nullable|string',
             'is_paid' => 'required|in:0,1',
         ]);
@@ -424,14 +424,43 @@ class TaskController extends Controller
         $sortTask = $request->input('sort_task');
         $sortSubtask = $request->input('sort_subtask');
         $sortClient = $request->input('sort_client');
+        $filterPayement = $request->input('filter_payment');
         $search = $request->input('search');
+
+        $priorityRaw = "CASE
+        WHEN billing_info IS NULL THEN 1
+        WHEN is_paid = 0 THEN 2
+        ELSE 3
+        END";
 
         $query = Task::whereHas('client', fn($q) => $q->where('nom', '!=', 'CCA'));
 
         $query->where(function ($q) {
             $q->where('status', 'validé')
-            ->orWhereHas('subtasks', fn($sq) => $sq->where('status', 'validé'));
+                ->orWhereHas('subtasks', fn($sq) => $sq->where('status', 'validé'));
         });
+
+        $query->where(function ($q) {
+            $q->where('is_paid', false)
+                ->orWhereHas('subtasks', function ($sq) {
+                    $sq->where('is_paid', false);
+                });
+        });
+
+        if ($filterPayement) {
+            $query->where(function ($q) use ($filterPayement) {
+                if ($filterPayement === 'a_facturer') {
+                    $q->whereNull('billing_info')
+                        ->orWhereHas('subtasks', fn($sq) => $sq->whereNull('billing_info'));
+                } elseif ($filterPayement === 'non_paye') {
+                    $q->where(fn($sub) => $sub->whereNotNull('billing_info')->where('is_paid', false))
+                        ->orWhereHas('subtasks', fn($sq) => $sq->whereNotNull('billing_info')->where('is_paid', false));
+                } elseif ($filterPayement === 'paye') {
+                    $q->where('is_paid', true)
+                        ->orWhereHas('subtasks', fn($sq) => $sq->where('is_paid', true));
+                }
+            });
+        }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -443,11 +472,22 @@ class TaskController extends Controller
 
         $query->with([
             'client',
-            'subtasks' => function ($q) use ($search, $sortSubtask) {
+            'subtasks' => function ($q) use ($search, $sortSubtask, $filterPayement, $priorityRaw) {
                 $q->where('status', 'validé');
-                if ($search) {
+
+                if($search) {
                     $q->where('label', 'LIKE', "%{$search}%");
                 }
+
+                if ($filterPayement === 'paye') {
+                    $q->where('is_paid', true);
+                } elseif ($filterPayement === 'non_paye') {
+                    $q->where('is_paid', false)->whereNotNull('billing_info');
+                } elseif ($filterPayement === 'a_facturer') {
+                    $q->whereNull('billing_info');
+                }
+
+                $q->orderByRaw($priorityRaw)->orderBy('due_date', 'asc');
 
                 if ($sortSubtask) {
                     $q->orderBy('label', $sortSubtask);
@@ -462,11 +502,17 @@ class TaskController extends Controller
         } elseif ($sortTask) {
             $query->orderBy('label', $sortTask);
         } else {
-            $query->orderBy('updated_at', 'desc');
+            $query->orderByRaw($priorityRaw)
+            ->orderBy('due_date', 'asc');
         }
 
         $tasks = $query->get();
 
         return view('gestions.gestion', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'search'));
+    }
+
+    public function indexArchive(Request $request) 
+    {
+        return view('archives.archive', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'search'));
     }
 }

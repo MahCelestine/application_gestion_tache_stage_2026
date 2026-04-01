@@ -2,6 +2,7 @@
     <x-slot:searchBar>
         <x-search-bar :route="route('gestions.gestion')" />
     </x-slot:searchBar>
+    <x-filtrage-paiement />
     <table class="w-[100%] border-separate border-spacing-y-4">
         <thead class="text-lg">
             <tr>

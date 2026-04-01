@@ -92,9 +92,9 @@
                 @if (!$isCCA)
                     <div class="basis-1/4">
                         <div class="flex flex-col mb-6">
-                            <label class="text-xl font-semibold">N° Devis</label>
+                            <label class="text-xl font-semibold">N° Devis *</label>
                             <input type="text" name="quote_number" placeholder="Le numéro de devis"
-                                class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                                class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" required/>
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xl font-semibold">Facturation</label>
@@ -197,28 +197,6 @@
         const container = document.getElementById('subtasks-container');
         const template = document.getElementById('subtask-template');
         const btn = document.getElementById('add-subtask-btn');
-
-        btn.addEventListener('click', function () {
-            const clone = template.content.cloneNode(true);
-            const id = subtaskIndex++;
-
-            clone.querySelectorAll('[name*="INDEX"]').forEach(el => {
-                el.name = el.name.replace('INDEX', id);
-            });
-
-            container.appendChild(clone);
-
-            const newSelect = container.lastElementChild.querySelector('.select-equipes-dynamic');
-            if (newSelect) {
-                new TomSelect(newSelect, {
-                    plugins: ['remove_button'],
-                    create: false
-                });
-            }
-
-            validateAllDates();
-        });
-
         const newClientInput = document.getElementById('new_client_name');
         const existingClientSelect = document.getElementById('client_id_select');
         const errorMsg = document.getElementById('client-error-msg');
@@ -336,6 +314,50 @@
                 e.preventDefault();
                 alert("Veuillez corriger les champs en rouge avant de valider le formulaire.");
             }
+        });
+
+        const quoteInput = document.querySelector('input[name="quote_number"]');
+
+        if (quoteInput) {
+            quoteInput.addEventListener('input', function () {
+                const currentValue = this.value;
+                const subtaskQuoteInput = document.querySelectorAll('input[name^="subtasks"][name$="[quote_number]"]');
+
+                subtaskQuoteInput.forEach(input => {
+                    input.value = currentValue;
+                });
+            });
+        }
+
+        btn.addEventListener('click', function () {
+            const clone = template.content.cloneNode(true);
+            const id = subtaskIndex++;
+
+            clone.querySelectorAll('[name*="INDEX"]').forEach(el => {
+                el.name = el.name.replace('INDEX', id);
+            });
+
+            const parentQuoteInput = document.querySelector('input[name="quote_number"]');
+            const currentQuote = parentQuoteInput ? parentQuoteInput.value : '';
+            const subtaskQuote = clone.querySelector('input[name$="[quote_number]"]');
+
+            if (subtaskQuote && currentQuote) {
+                subtaskQuote.value = currentQuote;
+            }
+
+            container.appendChild(clone);
+
+            const lastAddedRow = container.lastElementChild;
+            const newSelect = lastAddedRow.querySelector('.select-equipes-dynamic');
+
+            if (newSelect) {
+                new TomSelect(newSelect, {
+                    plugins: ['remove_button'],
+                    create: false
+                });
+            }
+
+            syncAllData();
         });
     </script>
 </x-layout>
