@@ -14,25 +14,26 @@
                         class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
                         value="{{ $task->quote_number }}" required>
                 </div>
-
                 <div class="basis-1/2 mx-5">
-                    <div>
-                        <label class="text-xl font-semibold">N° Facture</label>
-                        <input type="text" id="billing_input" name="billing_info"
-                            class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
-                            value="{{ $task->billing_info }}">
-                    </div>
-                    <div class="mt-4" id="payement_status" style="display: none;">
-                        <div class="flex flex-col my-6">
-                            <label class="text-xl font-semibold">Statut Paiement</label>
-                            <select
-                                class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
-                                name="is_paid">
-                                <option value="0" {{ !$task->is_paid ? 'selected' : '' }}>Non Payé</option>
-                                <option value="1" {{ $task->is_paid ? 'selected' : '' }}>Payé</option>
-                            </select>
-                        </div>
-                    </div>
+                    <label class="text-xl font-semibold">N° Facture</label>
+                    <input type="text" id="billing_input" name="billing_info"
+                        class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
+                        value="{{ $task->billing_info }}">
+                </div>
+            </div>
+        </div>
+        <div id="payement_status" style="display: none;" class="border-2 border-gray-300 rounded-xl shadow-md mb-8">
+            <h2 class="text-2xl mx-6 my-6">Etat</h2>
+            <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
+            <div class="mt-4 mx-10">
+                <div class="flex flex-col my-6">
+                    <label class="text-xl font-semibold">Statut Paiement</label>
+                    <select
+                        class="my-4 text-lg rounded-lg border-2 w-[90%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
+                        name="is_paid">
+                        <option value="0" {{ !$task->is_paid ? 'selected' : '' }}>Non Payé</option>
+                        <option value="1" {{ $task->is_paid ? 'selected' : '' }}>Payé</option>
+                    </select>
                 </div>
             </div>
         </div>

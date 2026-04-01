@@ -24,7 +24,7 @@
             <a href="/" class="font-semibold hover:font-normal hover:tracking-wide">Accueil</a>
             <a href="/projet_cca" class="font-semibold hover:font-normal hover:tracking-wide">Projet CCA</a>
             <a href="/gestions" class="font-semibold hover:font-normal hover:tracking-wide">Gestion</a>
-            <a href="/" class="font-semibold hover:font-normal hover:tracking-wide">Prospect</a>
+            <a href="/prospects" class="font-semibold hover:font-normal hover:tracking-wide">Prospect</a>
             <a href="/archives" class="font-semibold hover:font-normal hover:tracking-wide">Archives</a>
             <a href="{{ route('filament.admin.pages.dashboard') }}"
                 class="btn font-semibold hover:font-normal hover:tracking-wide">

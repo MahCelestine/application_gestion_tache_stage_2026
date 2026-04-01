@@ -235,8 +235,7 @@ class TaskController extends Controller
                     $query->where(function ($q) use ($search) {
                         $q->where('subtasks.label', 'LIKE', "%{$search}%")
                             ->orWhereHas('equipes', function ($equipe) use ($search) {
-                                $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
-                                    ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                                $equipe->where('equipes.prenom', 'LIKE', "%{$search}%");
                             })
                             ->orWhereHas('task', function ($parent) use ($search) {
                                 $parent->where('tasks.label', 'LIKE', "%{$search}%")
@@ -272,15 +271,13 @@ class TaskController extends Controller
                             ->where('clients.nom', '!=', 'CCA');
                     })
                     ->orWhereHas('equipes', function ($equipe) use ($search) {
-                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
-                            ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%");
                     })
                     ->orWhereHas('subtasks', function ($sq) use ($search, $filterStatus) {
                         $sq->where(function ($sub) use ($search) {
                             $sub->where('subtasks.label', 'LIKE', "%{$search}%")
                                 ->orWhereHas('equipes', function ($equipe) use ($search) {
-                                    $equipe->where('equipes.nom', 'LIKE', "%{$search}%")
-                                        ->orWhere('equipes.prenom', 'LIKE', "%{$search}%");
+                                    $equipe->where('equipes.prenom', 'LIKE', "%{$search}%");
                                 });
                         });
                         if ($filterStatus) {
@@ -300,8 +297,7 @@ class TaskController extends Controller
                             $sq->where(function ($sub) use ($search) {
                                 $sub->where('subtasks.label', 'LIKE', "%{$search}%")
                                     ->orWhereHas('equipes', function ($seq) use ($search) {
-                                        $seq->where('prenom', 'LIKE', "%{$search}%")
-                                            ->orWhere('nom', 'LIKE', "%{$search}%");
+                                        $seq->where('prenom', 'LIKE', "%{$search}%");
                                     });
                             });
                         }
@@ -344,8 +340,7 @@ class TaskController extends Controller
                             $query->where(function ($q) use ($search) {
                                 $q->where('subtasks.label', 'LIKE', "%{$search}%")
                                     ->orWhereHas('equipes', function ($equipe) use ($search) {
-                                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
-                                            ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%");
                                     });
                             });
                         }
@@ -370,15 +365,13 @@ class TaskController extends Controller
             $query->where(function ($q) use ($search, $filterStatus) {
                 $q->where('tasks.label', 'LIKE', "%{$search}%")
                     ->orWhereHas('equipes', function ($equipe) use ($search) {
-                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%")
-                            ->orWhere('equipes.nom', 'LIKE', "%{$search}%");
+                        $equipe->where('equipes.prenom', 'LIKE', "%{$search}%");
                     })
                     ->orWhereHas('subtasks', function ($sq) use ($search, $filterStatus) {
                         $sq->where(function ($sub) use ($search) {
                             $sub->where('subtasks.label', 'LIKE', "%{$search}%")
                                 ->orWhereHas('equipes', function ($equipe) use ($search) {
-                                    $equipe->where('equipes.nom', 'LIKE', "%{$search}%")
-                                        ->orWhere('equipes.prenom', 'LIKE', "%{$search}%");
+                                    $equipe->where('equipes.prenom', 'LIKE', "%{$search}%");
                                 });
                         });
                         if ($filterStatus) {
@@ -398,8 +391,7 @@ class TaskController extends Controller
                             $sq->where(function ($sub) use ($search) {
                                 $sub->where('subtasks.label', 'LIKE', "%{$search}%")
                                     ->orWhereHas('equipes', function ($seq) use ($search) {
-                                        $seq->where('prenom', 'LIKE', "%{$search}%")
-                                            ->orWhere('nom', 'LIKE', "%{$search}%");
+                                        $seq->where('prenom', 'LIKE', "%{$search}%");
                                     });
                             });
                         }
@@ -475,7 +467,7 @@ class TaskController extends Controller
             'subtasks' => function ($q) use ($search, $sortSubtask, $filterPayement, $priorityRaw) {
                 $q->where('status', 'validé');
 
-                if($search) {
+                if ($search) {
                     $q->where('label', 'LIKE', "%{$search}%");
                 }
 
@@ -487,10 +479,10 @@ class TaskController extends Controller
                     $q->whereNull('billing_info');
                 }
 
-                $q->orderByRaw($priorityRaw)->orderBy('due_date', 'asc');
-
                 if ($sortSubtask) {
                     $q->orderBy('label', $sortSubtask);
+                } else {
+                    $q->orderByRaw($priorityRaw)->orderBy('due_date', 'asc');
                 }
             }
         ]);
@@ -503,7 +495,7 @@ class TaskController extends Controller
             $query->orderBy('label', $sortTask);
         } else {
             $query->orderByRaw($priorityRaw)
-            ->orderBy('due_date', 'asc');
+                ->orderBy('due_date', 'asc');
         }
 
         $tasks = $query->get();
@@ -511,8 +503,62 @@ class TaskController extends Controller
         return view('gestions.gestion', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'search'));
     }
 
-    public function indexArchive(Request $request) 
+    public function indexArchive(Request $request)
     {
+        $sortTask = $request->input('sort_task');
+        $sortSubtask = $request->input('sort_subtask');
+        $sortClient = $request->input('sort_client');
+        $search = $request->input('search');
+
+        $query = Task::where('is_paid', true)
+            ->with([
+                'client',
+                'subtasks' => function ($q) {
+                    $q->where('is_paid', true);
+                }
+            ]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('label', 'LIKE', "%{$search}%")
+                    ->orWhereHas('client', fn($cq) => $cq->where('nom', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('equipes', function ($eq) use ($search) {
+                        $eq->where('prenom', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('subtasks', function ($sq) use ($search) {
+                        $sq->where('label', 'LIKE', "%{$search}%")
+                        ->orWhereHas('equipes', function ($seq) use ($search) {
+                            $seq->where('prenom', 'LIKE', "%{$search}%");
+                        });
+                        });
+            });
+        }
+
+        if ($sortClient) {
+            $query->join('clients', 'tasks.client_id', '=', 'clients.id')
+                ->select('tasks.*')
+                ->orderBy('clients.nom', $sortClient);
+        } elseif ($sortTask) {
+            $query->orderBy('label', $sortTask);
+        } else {
+            $query->orderBy('updated_at', 'desc');
+        }
+
+        if ($sortSubtask) {
+            $query->orderBy('label', $sortSubtask);
+        } else {
+            $query->orderBy('updated_at', 'desc');
+        }
+
+        if ($sortTask) {
+            $query->orderBy('label', $sortTask);
+        } else {
+            $query->orderBy('updated_at', 'desc');
+        }
+
+
+        $tasks = $query->get();
+
         return view('archives.archive', compact('tasks', 'sortTask', 'sortSubtask', 'sortClient', 'search'));
     }
 }

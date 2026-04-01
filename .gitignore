@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/resources/views/prospects
+/database/migrations/2026_04_01_091855_create_prospects_table.php
+/app/Http/Controllers/ProspectController.php
+/app/Models/Prospect.php
