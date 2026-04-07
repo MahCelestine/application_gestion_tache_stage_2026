@@ -1,8 +1,16 @@
 <x-layout>
     <x-slot:searchBar>
-        <x-search-bar :route="route('gestions.gestion')" />
+        <x-search-bar :route="route('gestions.gestion')" placeholder="Client, tâche ..."/>
     </x-slot:searchBar>
-    <x-filtrage-paiement />
+    <x-filter-bar 
+    name="filter_payment" 
+    label="Filtrer par paiement" 
+    :options="[
+        'a_facturer' => 'À facturer', 
+        'non_paye' => 'Non payés', 
+        'paye' => 'Payés'
+    ]" 
+/>
     <table class="w-[100%] border-separate border-spacing-y-4">
         <thead class="text-lg">
             <tr>

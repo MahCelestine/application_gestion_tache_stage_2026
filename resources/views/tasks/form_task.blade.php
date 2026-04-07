@@ -3,12 +3,15 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <form action="{{ route('tasks.store') }}" method="POST">
+        @csrf
         <div class="border-2 border-gray-300 rounded-xl shadow-md mb-8">
             <h2 class="text-2xl mx-6 my-6">Ajouter une nouvelle grande tâche</h2>
             <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
             <div class="flex my-6">
                 <div class="basis-2/4 mx-5">
-                    @csrf
+                    @if(isset($prospect))
+                        <input type="hidden" name="prospect_id" value="{{ $prospect->id }}">
+                    @endif
                     @php
                         $isCCA = request('context') === 'cca';
                     @endphp
@@ -30,6 +33,7 @@
                                         <label class="text-xl">Ajouter un nouveau client</label>
                                         <input type="text" id="new_client_name" name="new_client_name"
                                             placeholder="Nom du client"
+                                            value="{{ isset($prospect) && !$existingClient ? $prospect->nom : '' }}"
                                             class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-10" />
                                     </div>
                                     <div class="flex flex-col basis-1/2 mt-2">
@@ -38,7 +42,8 @@
                                             class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-10">
                                             <option value="" selected>Choisir un client...</option>
                                             @foreach ($clients as $client)
-                                                <option value="{{ $client->id }}">{{ $client->nom }}</option>
+                                                <option value="{{ $client->id }}" {{ (isset($existingClient) && $existingClient->id == $client->id) ? 'selected' : '' }}>{{ $client->nom }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -94,7 +99,9 @@
                         <div class="flex flex-col mb-6">
                             <label class="text-xl font-semibold">N° Devis *</label>
                             <input type="text" name="quote_number" placeholder="Le numéro de devis"
-                                class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" required/>
+                                value="{{ isset($prospect) ? $prospect->quote_number : old('quote_number') }}"
+                                class="my-4 text-lg rounded-lg border-2 w-[80%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"
+                                required />
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xl font-semibold">Facturation</label>
@@ -179,7 +186,7 @@
                 </div>
             </template>
         </div>
-        <div class="flex flex col">
+        <div class="flex flex-col">
             <small class="text-base my-2 mx-6">* Champs obligatoires</small>
             <button type="submit"
                 class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto">Valider</button>

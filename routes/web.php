@@ -21,6 +21,7 @@ Route::get('/gestions/subtask/{subtask}/edit', [SubtaskController::class, 'editG
 Route::get('/prospects', [ProspectController::class, 'index'])->name('prospects.prospect');
 Route::get('/prospects/create', [ProspectController::class, 'create'])->name('prospects.create');
 Route::get('/prospects/{prospect}/edit', [ProspectController::class, 'edit'])->name('prospects.edit');
+Route::get('/prospects/{prospect}/transform', [ProspectController::class, 'transform'])->name('prospects.transform');
 Route::get('/archives', [TaskController::class, 'indexArchive'])->name('archives.archive');
 
 Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
@@ -31,7 +32,7 @@ Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.upda
 Route::put('/subtasks/{subtask}', [SubtaskController::class, 'update'])->name('subtasks.update');
 Route::put('/gestions/task/{task}', [TaskController::class, 'updateGestion'])->name('gestions.task_update');
 Route::put('/gestions/subtask/{subtask}', [SubtaskController::class, 'updateGestion'])->name('gestions.subtask_update');
-Route::put('prospects/{prospect}', [ProspectController::class, 'update'])->name('prospects.update');
+Route::put('/prospects/{prospect}', [ProspectController::class, 'update'])->name('prospects.update');
 
 Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 Route::delete('/subtasks/{subtask}', [SubtaskController::class, 'destroy'])->name('subtasks.destroy');

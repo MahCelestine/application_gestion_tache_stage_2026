@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Equipe;
 use App\Models\Task;
 use App\Models\Client;
+use App\Models\Prospect;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -33,12 +34,11 @@ class TaskController extends Controller
         $clientId = $request->client_id;
 
         if ($request->filled('new_client_name')) {
-            $newClient = Client::create([
-                'nom' => $request->new_client_name
-            ]);
-            $clientId = $newClient->id;
+            $name = trim($request->new_client_name);
+
+            $client = Client::firstOrCreate(['nom' => $name]);
+            $clientId = $client->id;
         }
-        ;
 
         $isCCA = ($request->input('context') === 'cca');
         $estimatedHours = $request->input('estimated_h') + ($request->input('estimated_m') / 60);
@@ -77,17 +77,35 @@ class TaskController extends Controller
             }
         }
 
+        if ($request->has('prospect_id')) {
+            $prospect = Prospect::find($request->prospect_id);
+            if ($prospect) {
+                $prospect->delete();
+            }
+        }
+
         $redirectRoute = $request->input('redirect_to', 'tasks.index');
         return redirect()->route($redirectRoute);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $equipes = Equipe::all();
         $clients = Client::all();
 
         $clientCCA = Client::where('nom', 'CCA')->first();
-        return view('tasks.form_task', compact('clients', 'equipes', 'clientCCA'));
+
+        $prospect = null;
+        $existingClient = null;
+
+        if ($request->has('prospect_id')) {
+            $prospect = Prospect::with('notes')->find($request->prospect_id);
+            if ($prospect) {
+                $existingClient = Client::where('nom', $prospect->nom)->first();
+            }
+        }
+
+        return view('tasks.form_task', compact('clients', 'equipes', 'clientCCA', 'prospect', 'existingClient'));
     }
 
     public function edit($id)
@@ -527,10 +545,10 @@ class TaskController extends Controller
                     })
                     ->orWhereHas('subtasks', function ($sq) use ($search) {
                         $sq->where('label', 'LIKE', "%{$search}%")
-                        ->orWhereHas('equipes', function ($seq) use ($search) {
-                            $seq->where('prenom', 'LIKE', "%{$search}%");
-                        });
-                        });
+                            ->orWhereHas('equipes', function ($seq) use ($search) {
+                                $seq->where('prenom', 'LIKE', "%{$search}%");
+                            });
+                    });
             });
         }
 

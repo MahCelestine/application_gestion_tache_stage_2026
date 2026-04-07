@@ -13,7 +13,7 @@ class ListSubtasks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            
         ];
     }
 }
