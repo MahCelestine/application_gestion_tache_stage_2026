@@ -91,6 +91,8 @@ class Task extends Model
                         'estimated_hours' => self::convertToHours($subData['estimated_h'], $subData['estimated_m']),
                         'actual_hours' => 0,
                         'status' => 'en cours',
+                        'quote_number' => $subData['quote_number'] ?? $task->quote_number,
+                        'billing_info' => $subData['billing_info'] ?? null,
                     ]);
                 }
                 $task->subtasks()->first()->syncParentTask();
