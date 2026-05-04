@@ -39,8 +39,8 @@ class UpdateTaskRequest extends FormRequest
                 'estimated_h' => 'required|numeric|min:0',
                 'estimated_m' => 'required|numeric|min:0|max:59',
                 'add_actual_h' => 'nullable|numeric|min:0',
-                'add_actual_m' => 'nullable|numeric|min;0|max:59',
-                'reason_description' => 'required_id:status,bloqué|nullable|string',
+                'add_actual_m' => 'nullable|numeric|min:0|max:59',
+                'reason_description' => 'required_if:status,bloqué|nullable|string',
             ];
         }
 

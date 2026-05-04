@@ -42,6 +42,8 @@ class TaskList extends Component
                 if ($this->sortSubtask) {
                     $q->orderBy('label', $this->sortSubtask);
                 }
+
+                $q->filtersSortSub(null, $this->filterStatus, $this->sortSubtask);
             }
         ]);
 

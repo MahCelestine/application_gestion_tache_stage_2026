@@ -135,15 +135,18 @@ class Subtask extends Model
     }
 
     public function scopeFiltersSortSub($query, $search, $status, $sortOrder)
-    {
-        return $query->when($search, function ($q) use ($search) {
+{
+    return $query->when($search, function ($q) use ($search) {
             $q->where('label', 'LIKE', "%{$search}%");
         })
-            ->when($status, function ($q) use ($status) {
-                $q->where('status', $status);
-            })
-            ->orderBy('label', $sortOrder ?: 'asc');
-    }
+        ->when($status, function ($q) use ($status) {
+            $q->where('status', $status);
+        })
+        
+        ->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'en cours', 'validé') ASC")
+        ->orderBy('due_date', 'asc')
+        ->orderBy('label', $sortOrder ?: 'asc');
+}
 
     public function scopeFiltersPaidSub($query, $search, $filterPayment, $sortOrder)
     {

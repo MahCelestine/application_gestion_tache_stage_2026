@@ -1,7 +1,10 @@
 <x-layout>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <div class="mx-40">
+    <div class="mx-40" x-data="{
+            status: '{{ $task->status }}',
+            hasSubtasks: {{ $task->subtasks->count() > 0 ? 'true' : 'false' }},
+        }">
         <form id="edit-task-form" action="{{ route('tasks.update', $task->id) }}" method="POST">
             @csrf
             @php
@@ -96,7 +99,7 @@
                         <div class="basis-1/2 mx-5">
                             <div class="flex flex-col">
                                 <label class="text-lg font-semibold">État *</label>
-                                <select name="status" id="status-select" onchange="toggleReasonField()" required
+                                <select name="status" id="status-select" x-model="status" required
                                     class="my-2  rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">
                                     <option value="en cours" {{ $task->status == 'en cours' ? 'selected' : '' }}>En cours
                                     </option>
@@ -106,11 +109,11 @@
                                     <option value="validé" {{ $task->status == 'validé' ? 'selected' : '' }}>Validé</option>
                                 </select>
                             </div>
-                            <div id="reason-container" style="display: {{ $task->status == 'bloqué' ? 'block' : 'none' }}">
+                            <div id="reason-container" x-show="status === 'bloqué'" x-cloak>
                                 <div class="flex flex-col mb-2">
                                     <label class="text-lg font-semibold">Raison du blocage *</label>
                                     <textarea name="reason_description" id="reason_description"
-                                        placeholder="Expliquez le problème..."
+                                        placeholder="Expliquez le problème..." :required="status === 'bloqué' && !hasSubtasks"
                                         class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">{{ $task->currentBlocking() ? $task->currentBlocking()->description : '' }}</textarea>
                                 </div>
                             </div>
@@ -189,26 +192,26 @@
             plugins: ['remove_button'],
         });
 
-        function toggleReasonField() {
-            const status = document.getElementById('status-select').value;
-            const container = document.getElementById('reason-container');
-            const textarea = document.getElementById('reason_description');
+        // function toggleReasonField() {
+        //     const status = document.getElementById('status-select').value;
+        //     const container = document.getElementById('reason-container');
+        //     const textarea = document.getElementById('reason_description');
 
-            const hasSubtasks = {{ $task->subtasks->count() > 0 ? 'true' : 'false' }}
+        //     const hasSubtasks =
 
-                    if (status === 'bloqué') {
-                container.style.display = 'block';
-                if (!hasSubtasks) {
-                    textarea.setAttribute('required', 'required');
-                } else {
-                    textarea.removeAttribute('required');
-                }
+        //             if (status === 'bloqué') {
+        //         container.style.display = 'block';
+        //         if (!hasSubtasks) {
+        //             textarea.setAttribute('required', 'required');
+        //         } else {
+        //             textarea.removeAttribute('required');
+        //         }
 
-            } else {
-                container.style.display = 'none';
-                textarea.removeAttribute('required');
-            }
-        }
+        //     } else {
+        //         container.style.display = 'none';
+        //         textarea.removeAttribute('required');
+        //     }
+        // }
 
         document.getElementById('edit-task-form').addEventListener('submit', function () {
             const overlay = document.getElementById('loading-overlay');
