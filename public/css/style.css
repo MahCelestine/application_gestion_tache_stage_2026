@@ -1,23 +1,32 @@
 .text-bloque {
     color: #dc3545 !important;
+    font-weight: bold !important;
 }
 
 .text-en-cours {
-    color: #f39c12 !important;
+    color: #007bff !important;
 }
 
 .text-valide {
     color: #28a745 !important;
 }
 
+.text-attente-bat {
+    color: #f39c12 !important;
+}
+
 .cell-bloque {
     background-color: rgba(231, 60, 80, 0.7) !important;
     color: #fff !important;
     border-radius: 999px;
-    padding: 6%;
+    padding: 4%;
 }
 
 .cell-en-cours {
+    color: #007bff !important;
+}
+
+.cell-attente-bat {
     color: #f39c12 !important;
 }
 
@@ -36,13 +45,19 @@
 }
 
 .task-group-border td {
-    padding-left: 10px;
-    padding-bottom: 10px;
+    padding-left: 5px;
 }
 
+.task-group-border td:first-child {
+    padding-left: 15px;
+}
 table {
     border-separate: separate;
     border-spacing: 0 15px;
+}
+
+.padding_ajout {
+    padding-bottom: 5px !important;
 }
 
 .ts-wrapper.multi .ts-control {
@@ -62,4 +77,71 @@ table {
     background-color: #F3F4F6 !important;
     border-radius: 4px !important;
     color: #374151 !important;
+}
+
+/* On cible le conteneur de navigation généré par Laravel */
+.pagination-container nav div[class*="flex"] {
+    gap: 8px !important;
+    /* Crée un espace réel entre les boutons */
+}
+
+/* On force le style sur chaque élément (Lien ou Span) */
+.pagination-container nav a,
+.pagination-container nav span[aria-current="page"] span,
+.pagination-container nav span[aria-disabled="true"] span {
+    border: 1px solid #e5e7eb !important;
+    background-color: white !important;
+    color: #374151 !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+}
+
+/* On gère la couleur de la page active */
+.pagination-container nav span[aria-current="page"] span {
+    background-color: #3b82f6 !important;
+    /* Ton bleu */
+    color: white !important;
+    border-color: #3b82f6 !important;
+}
+
+/* On retire l'ombre par défaut de Tailwind qui peut baver */
+.pagination-container nav a,
+.pagination-container nav span {
+    box-shadow: none !important;
+}
+
+#loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    cursor: wait;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

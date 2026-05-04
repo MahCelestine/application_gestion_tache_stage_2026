@@ -56,8 +56,9 @@ class SubtaskResource extends Resource
                         Select::make('status')
                             ->options([
                                 'en cours' => 'En cours',
+                                'attente BAT' => 'Attente BAT',
                                 'bloqué' => 'Bloqué',
-                                'terminé' => 'Terminé',
+                                'validé' => 'Validé',
                             ]),
                     ]),
 
@@ -109,8 +110,9 @@ class SubtaskResource extends Resource
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'en cours' => 'warning',
+                        'attente BAT' => 'info',
                         'bloqué' => 'danger',
-                        'terminé' => 'success',
+                        'validé' => 'success',
                         default => 'gray',
                     }),
             ])

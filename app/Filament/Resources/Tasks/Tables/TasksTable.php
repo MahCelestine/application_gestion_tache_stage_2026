@@ -28,7 +28,8 @@ class TasksTable
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        'en cours' => 'warning', // Orange/Jaune
+                        'en cours' => 'info', // bleu
+                        'attente BAT' => 'warning',  // orange
                         'validé' => 'success',   // Vert
                         'bloqué' => 'danger',    // Rouge
                         default => 'gray',       // Gris par défaut

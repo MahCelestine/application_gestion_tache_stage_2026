@@ -23,7 +23,7 @@ class TaskForm
                 TextInput::make('label')
                     ->required(),
                 Select::make('status')
-                    ->options(['en cours' => 'En cours', 'validé' => 'Validé', 'bloqué' => 'Bloqué'])
+                    ->options(['en cours' => 'En cours','attente BAT' => 'Attente BAT', 'validé' => 'Validé', 'bloqué' => 'Bloqué'])
                     ->default('en cours')
                     ->required(),
                 DatePicker::make('due_date')

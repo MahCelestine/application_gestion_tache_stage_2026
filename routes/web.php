@@ -39,3 +39,4 @@ Route::delete('/subtasks/{subtask}', [SubtaskController::class, 'destroy'])->nam
 Route::delete('/prospects/{prospect}', [ProspectController::class, 'destroy'])->name('prospects.destroy');
 
 Route::patch('/gestions/subtask/{subtask}/reset', [SubtaskController::class, 'resetEtat'])->name('gestions.subtask_reset');
+Route::patch('/gestions/task/{task}/reset', [TaskController::class, 'resetEtat'])->name('gestions.task_reset');

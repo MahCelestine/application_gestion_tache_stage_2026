@@ -27,7 +27,19 @@ class Prospect extends Model
         return $this->morphMany(Reason::class, 'raisonable');
     }
 
-    public function lastNote () {
+    public function lastNote()
+    {
         return $this->notes()->latest()->first();
+    }
+
+    public static function handleConversion($prospectId)
+    {
+        if ($prospectId) {
+            return self::find($prospectId);
+            if ($prospect) {
+                return $prospect->delete();
+            }
+        }
+        return false;
     }
 }
