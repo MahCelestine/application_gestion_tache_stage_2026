@@ -18,15 +18,4 @@
 
     <livewire:task-list :isCca="false" />
 
-    <script>
-        function toggleReason(id) {
-            const row = document.getElementById(id);
-            if (row.style.display === "none") {
-                row.style.display = "table-row";
-            } else {
-                row.style.display = "none";
-            }
-        }
-    </script>
-
 </x-layout>

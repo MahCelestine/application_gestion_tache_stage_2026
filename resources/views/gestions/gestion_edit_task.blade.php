@@ -1,5 +1,8 @@
 <x-layout>
-    <div class="mx-40">
+    <div class="mx-40" x-data="{ 
+        billingInfo: '{{ $task->billing_info }}', 
+        showPayement: '{{ $task->billing_info }}'.trim() !== '' 
+    }">
         <form action="{{ route('gestions.task_update', $task->id) }}" method="POST">
             @csrf
             @method('PUT')
@@ -16,13 +19,13 @@
                     </div>
                     <div class="basis-1/2 mx-5">
                         <label class="text-lg font-semibold">N° Facture</label>
-                        <input type="text" id="billing_input" name="billing_info"
+                        <input type="text" id="billing_input" name="billing_info" x-model="billingInfo" x-effect="showPayement = billingInfo.trim() !== ''"
                             class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
                             value="{{ $task->billing_info }}">
                     </div>
                 </div>
             </div>
-            <div id="payement_status" style="display: none;" class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
+            <div id="payement_status" x-show="showPayement" x-cloak class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
                 <h2 class="text-xl mx-6 my-2">Etat</h2>
                 <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
                 <div class="mt-4 mx-10">
@@ -63,22 +66,22 @@
     <livewire:delete-confirmation-modal />
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const billingInput = document.getElementById('billing_input');
-            const payementContainer = document.getElementById('payement_status');
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     const billingInput = document.getElementById('billing_input');
+        //     const payementContainer = document.getElementById('payement_status');
 
-            function togglePayementStatus() {
-                if (billingInput.value.trim() !== "") {
-                    payementContainer.style.display = 'block';
-                } else {
-                    payementContainer.style.display = 'none';
-                }
-            }
+        //     function togglePayementStatus() {
+        //         if (billingInput.value.trim() !== "") {
+        //             payementContainer.style.display = 'block';
+        //         } else {
+        //             payementContainer.style.display = 'none';
+        //         }
+        //     }
 
-            togglePayementStatus();
+        //     togglePayementStatus();
 
-            billingInput.addEventListener('input', togglePayementStatus);
-        });
+        //     billingInput.addEventListener('input', togglePayementStatus);
+        // });
 
         document.querySelector('form').addEventListener('submit', function () {
             const overlay = document.getElementById('loading-overlay');

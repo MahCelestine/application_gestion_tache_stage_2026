@@ -192,27 +192,6 @@
             plugins: ['remove_button'],
         });
 
-        // function toggleReasonField() {
-        //     const status = document.getElementById('status-select').value;
-        //     const container = document.getElementById('reason-container');
-        //     const textarea = document.getElementById('reason_description');
-
-        //     const hasSubtasks =
-
-        //             if (status === 'bloqué') {
-        //         container.style.display = 'block';
-        //         if (!hasSubtasks) {
-        //             textarea.setAttribute('required', 'required');
-        //         } else {
-        //             textarea.removeAttribute('required');
-        //         }
-
-        //     } else {
-        //         container.style.display = 'none';
-        //         textarea.removeAttribute('required');
-        //     }
-        // }
-
         document.getElementById('edit-task-form').addEventListener('submit', function () {
             const overlay = document.getElementById('loading-overlay');
             const submitBtn = this.querySelector('button[type="submit"]');

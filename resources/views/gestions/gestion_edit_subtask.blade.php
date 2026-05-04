@@ -1,5 +1,8 @@
 <x-layout>
-    <div class="mx-40">
+    <div class="mx-40" x-data="{
+        billingInfo: '{{ $subtask->billing_info }}',
+        showPayement: '{{ $subtask->billing_info }}'.trim() !== ''
+    }">
         <form action="{{ route('gestions.subtask_update', $subtask->id) }}" method="POST" id="gestion-task-form">
             @csrf
             @method('PUT')
@@ -18,14 +21,14 @@
                     <div class="basis-1/2 mx-5">
                         <div>
                             <label class="text-lg font-semibold">N° Facture</label>
-                            <input type="text" id="billing_input" name="billing_info"
+                            <input type="text" id="billing_input" name="billing_info" x-model="billingInfo" x-effect="showPayement = billingInfo.trim() !== ''"
                                 class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
                                 value="{{ $subtask->billing_info }}">
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="payement_status" style="display: none;" class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
+            <div id="payement_status" x-show="showPayement" x-cloak class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
                 <h2 class="text-xl mx-6 my-2">Etat</h2>
                 <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
                 <div class="mt-4 mx-10">
