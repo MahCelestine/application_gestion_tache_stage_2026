@@ -1,5 +1,8 @@
 <x-layout>
-    <div class="mx-40">
+    <div class="mx-40" x-data="{
+        status: 'RDV à prendre',
+        showRdvDate: false
+        }">
         <form action="{{ route('prospects.store') }}" method="POST">
             @csrf
             <div class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
@@ -23,17 +26,17 @@
                         <div class="flex flex-col">
                             <div class="flex flex-col mb-2">
                                 <label class="text-lg font-semibold">État *</label>
-                                <select name="status" id="status-select"
+                                <select name="status" id="status-select" x-model="status" x-effect="showRdvDate = (status === 'Date de RDV' || status === 'OK')"
                                     class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">
                                     <option value="RDV à prendre" selected>RDV à prendre</option>
                                     <option value="Date de RDV">Date de RDV</option>
                                     <option value="OK">OK</option>
                                 </select>
                             </div>
-                            <div id="date_rdv" style="display: none;" class="flex flex-col">
+                            <div id="date_rdv" x-show="showRdvDate" x-cloak class="flex flex-col">
                                 <label class="text-lg font-semibold">Date du RDV</label>
                                 <input type="date" name="rdv_date"
-                                    class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
+                                    class="my-2 rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                             </div>
                         </div>
 
@@ -60,24 +63,6 @@
     <livewire:loading-overlay />
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const statusSelect = document.getElementById('status-select');
-
-            const rdvContainer = document.getElementById('date_rdv');
-
-            function toggleFields() {
-                if (statusSelect.value === 'Date de RDV' || statusSelect.value === 'OK') {
-                    rdvContainer.style.display = 'block';
-                } else {
-                    rdvContainer.style.display = 'none';
-                }
-            }
-
-            statusSelect.addEventListener('change', toggleFields);
-
-            toggleFields();
-        })
-
         document.querySelector('form').addEventListener('submit', function () {
             const overlay = document.getElementById('loading-overlay');
             const submitBtn = this.querySelector('button[type="submit"]');

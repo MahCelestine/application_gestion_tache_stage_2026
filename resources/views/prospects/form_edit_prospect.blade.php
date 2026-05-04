@@ -1,5 +1,7 @@
 <x-layout>
-    <div class="mx-40">
+    <div class="mx-40" x-data="{
+        status: 'RDV à prendre',
+        showRdvDate: false}">
         <form action="{{ route('prospects.update', $prospect->id) }}" method="POST" id="edit-prospect-form">
             @csrf
             @method('PUT')
@@ -35,7 +37,8 @@
                     <div class="basis-1/4 mx-5">
                         <div class="flex flex-col mb-2">
                             <label class="text-lg font-semibold">État *</label>
-                            <select name="status" id="status-select"
+                            <select name="status" id="status-select" x-model="status"
+                                x-effect="showRdvDate = (status === 'Date de RDV' || status === 'OK')"
                                 class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">
                                 <option value="RDV à prendre" {{ $prospect->status == 'RDV à prendre' ? 'selected' : '' }}>RDV
                                     à prendre</option>
@@ -45,7 +48,7 @@
                                 <option value="OK" {{ $prospect->status == 'OK' ? 'selected' : '' }}>OK</option>
                             </select>
                         </div>
-                        <div id="date_rdv" style="display: none;">
+                        <div id="date_rdv" x-show="showRdvDate" x-cloak>
                             <label class="text-lg font-semibold">Date du RDV *</label>
                             <input type="date" name="rdv_date" id="rdv-input"
                                 value="{{ $prospect->rdv_date ? $prospect->rdv_date->format('Y-m-d') : '' }}"
@@ -62,7 +65,7 @@
                             <label class="text-lg font-semibold">Réponse</label>
                             <p id="response-warning" class="text-sm text-orange-600 font-medium mt-2"
                                 style="display: none;">
-                                Le statut doit être "OK" pour modifier la réponse.
+                                L'état doit être "OK" pour modifier la réponse.
                             </p>
                             <select name="response_type" id="response-select"
                                 class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 disabled:bg-gray-100 disabled:cursor-not-allowed">
