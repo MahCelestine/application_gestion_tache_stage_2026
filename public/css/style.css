@@ -51,6 +51,7 @@
 .task-group-border td:first-child {
     padding-left: 15px;
 }
+
 table {
     border-separate: separate;
     border-spacing: 0 15px;
@@ -144,4 +145,14 @@ table {
     100% {
         transform: rotate(360deg);
     }
+}
+
+thead th {
+    background-color: white !important;
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: none;
 }

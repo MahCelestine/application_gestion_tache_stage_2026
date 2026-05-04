@@ -3,7 +3,7 @@
         <thead class="text-lg z-10 bg-white">
             <tr>
                 <th
-                    class="py-3 rounded-tl-3xl border-t-2 border-b-2 border-l-2 border-gray-300 w-[8%] sticky top-0 bg-white">
+                    class="py-3 rounded-tl-3xl border-t-2 z-11 border-b-2 border-l-2 border-gray-300 w-[8%] sticky top-0 bg-white">
                     <button wire:click="sortBy('Client')">Client
                         {{$sortClient === 'asc' ? '(A-Z)' : ($sortClient === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
@@ -28,7 +28,24 @@
             </tr>
         </thead>
         @foreach ($tasks as $task)
-                    <tbody class="task-group-border shadow-md">
+                    <tbody wire:key="task-group-{{ $task->id }}" x-data x-init="
+                        gsap.fromTo($el, 
+                            { opacity: 0, y: 40, scale: 0.98 }, 
+                            { 
+                                opacity: 1, 
+                                y: 0, 
+                                scale: 1,
+                                duration: 0.8, 
+                                ease: 'back.out(1.4)',
+                                scrollTrigger: {
+                                    trigger: $el,
+                                    start: 'top 92%',
+                                    toggleActions: 'play none none none'
+                                }
+                            }
+                        )
+                    "
+                    class="task-group-border shadow-md">
                         <tr class="h-2">
                             <td colspan="11"></td>
                         </tr>
@@ -93,9 +110,11 @@
                                                     {{ $dueDate->format('d/m/Y') }}
                                                 </td>
                                                 <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">
-                                                    {{ $subtask->formatTime($subtask->estimated_hours) }}</td>
+                                                    {{ $subtask->formatTime($subtask->estimated_hours) }}
+                                                </td>
                                                 <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">
-                                                    {{ $subtask->formatTime($subtask->actual_hours) }}</td>
+                                                    {{ $subtask->formatTime($subtask->actual_hours) }}
+                                                </td>
                                                 <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">{{ $subtask->compteur_temps }}</td>
                                                 <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">{{ $subtask->quote_number ?? '-' }}</td>
                                                 <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">{{ $subtask->billing_info ?? '-' }}</td>

@@ -16,4 +16,9 @@
 
     <livewire:task-list :isCca="true" />
 
+    <script>
+        document.addEventListener("livewire:navigated", () => {
+            ScrollTrigger.refresh();
+        });
+    </script>
 </x-layout>

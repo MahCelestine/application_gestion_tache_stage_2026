@@ -1,40 +1,59 @@
-<div>
+<div class="mb-30">
     <table class="w-[100%] border-separate border-spacing-y-4">
-        <thead class="text-lg z-10 bg-white">
+        <thead class="text-lg z-[50] bg-white">
             <tr>
                 <th
-                    class="py-3 rounded-tl-3xl border-t-2 border-b-2 border-l-2 border-gray-300 w-[8%] sticky top-0 bg-white">
+                    class="py-3 rounded-tl-3xl border-t-2 z-[51] border-b-2 border-l-2 border-gray-300 w-[8%] sticky top-0 bg-white">
                     <button wire:click="sortBy('Client')">Client
                         {{$sortClient === 'asc' ? '(A-Z)' : ($sortClient === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[11%] sticky top-0 bg-white">
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[11%] sticky top-0 bg-white">
                     <button wire:click="sortBy('Task')">Grande tâches
                         {{$sortTask === 'asc' ? '(A-Z)' : ($sortTask === 'desc' ? '(Z-A)' : '') }}</button>
 
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[17%] sticky top-0 bg-white">
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[17%] sticky top-0 bg-white">
                     <button wire:click="sortBy('Subtask')">Sous-tâches
                         {{$sortSubtask === 'asc' ? '(A-Z)' : ($sortSubtask === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">État</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white">Assignation</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Délai</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Quota</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Temps réel</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Compteur</th>
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">État</th>
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white">Assignation
+                </th>
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Délai</th>
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Quota</th>
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Temps réel
+                </th>
+                <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Compteur</th>
                 @if(!$isCca)
-                    <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Devis</th>
-                    <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Facturation</th>
+                    <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Devis</th>
+                    <th class="py-3 border-t-2 z-[51] border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Facturation
+                    </th>
                 @endif
                 <th
-                    class="py-3 rounded-tr-3xl border-t-2 border-b-2 border-r-2 border-gray-300 w-[7%] sticky top-0 bg-white">
+                    class="py-3 rounded-tr-3xl border-t-2 z-[51] border-b-2 border-r-2 border-gray-300 w-[7%] sticky top-0 bg-white">
                 </th>
             </tr>
         </thead>
         @foreach ($tasks as $task)
             @if (!($task->status === 'validé' && $filterStatus === 'validé'))
                 @if ($task->status !== 'validé' || $filterStatus || $search)
-                            <tbody class="task-group-border shadow-md ml-2">
+                            <tbody class="task-group-border shadow-md ml-2" wire:key="task-group-{{ $task->id }}" x-data x-init="
+                            gsap.fromTo($el, 
+                                { opacity: 0, y: 20 }, 
+                                { 
+                                    opacity: 1, 
+                                    y: 0, 
+                                    duration: 1.5, 
+                                    ease: 'power2.out',
+                                    scrollTrigger: {
+                                        trigger: $el,
+                                        start: 'top 90%',
+                                        finish: 'top 85%',
+                                        toggleActions: 'play none none reverse',
+                                    }
+                                }
+                            )
+                        ">
                                 <tr>
                                     @if(!$isCca)
                                         <td colspan="12"></td>
