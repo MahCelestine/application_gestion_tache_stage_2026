@@ -60,8 +60,12 @@ class Subtask extends Model
         if (!$parent)
             return;
 
-        $parent->estimated_hours = $parent->subtasks()->sum('estimated_hours');
+        $sumEstimated = $parent->subtasks()->sum('estimated_hours');
         $parent->actual_hours = $parent->subtasks()->sum('actual_hours');
+
+        if ($sumEstimated > 0) {
+            $parent->estimated_hours = $sumEstimated;
+        }
 
         $maxSubtaskDate = $parent->subtasks()->max('due_date');
         if ($maxSubtaskDate > $parent->due_date) {

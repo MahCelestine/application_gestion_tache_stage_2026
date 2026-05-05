@@ -4,6 +4,7 @@
     <div class="mx-40" x-data="{
             status: '{{ $task->status }}',
             hasSubtasks: {{ $task->subtasks->count() > 0 ? 'true' : 'false' }},
+            showCorrection: false,
         }">
         <form id="edit-task-form" action="{{ route('tasks.update', $task->id) }}" method="POST">
             @csrf
@@ -113,7 +114,8 @@
                                 <div class="flex flex-col mb-2">
                                     <label class="text-lg font-semibold">Raison du blocage *</label>
                                     <textarea name="reason_description" id="reason_description"
-                                        placeholder="Expliquez le problème..." :required="status === 'bloqué' && !hasSubtasks"
+                                        placeholder="Expliquez le problème..."
+                                        :required="status === 'bloqué' && !hasSubtasks"
                                         class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1">{{ $task->currentBlocking() ? $task->currentBlocking()->description : '' }}</textarea>
                                 </div>
                             </div>
@@ -147,6 +149,25 @@
                                     <span>min</span>
                                 </div>
                             </div>
+                            <button type="button" @click="showCorrection = !showCorrection"
+                                class="bg-gray-100 hover:bg-white border-1 border-gray-300 shadow-sm py-3 font-semibold rounded-lg w-[75%] mb-2 transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Corriger
+                                le
+                                temps
+                                cumulé</button>
+                            <div id="correction-actual-hour" x-show="showCorrection" x-cloak>
+                                <label class="text-lg font-semibold">Déduire du temps</label>
+                                <div>
+                                    <input type="number" name="reduce_actual_h" value="" min="0"
+                                        x-effect="if(!showCorrection) { $el.value = '' }"
+                                        class="my-2  rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                        h</span>
+                                    <input type="number" name="reduce_actual_m" value="" min="0" max="59"
+                                        x-effect="if(!showCorrection) { $el.value = '' }"
+                                        class="my-2  rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
+                                        min</span>
+                                </div>
+                                <small class="text-base my-2">Les valeurs seront déduites du temps total</small>
+                            </div>
                         @else
                             <p class="my-2  rounded-lg border-2 w-[85%] border-white px-2 py-1">Le temps est géré via
                                 les
@@ -179,7 +200,8 @@
             <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
             <button type="button"
                 onclick="Livewire.dispatch('open-delete-modal', { title: 'la suppression de la grande tâche', message: 'Êtes-vous sûr de vouloir supprimer cette tâche ? Cela suprimera également toutes les sous-tâches associées.', label: 'Supprimer', formId: 'delete-form-{{ $task->id }}' })"
-                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Supprimer la tâche</button>
+                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Supprimer
+                la tâche</button>
         </form>
     </div>
 

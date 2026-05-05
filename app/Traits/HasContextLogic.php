@@ -5,9 +5,9 @@ namespace App\Traits;
 trait HasContextLogic
 {
 
-    public static function formatQuoteNumber(?string $quoteNumber, ?string $context): string
+    public static function formatQuoteNumber(?string $quoteNumber, ?string $context): ?string
     {
-        return ($context === 'cca') ? 'INTERNE' : ($quoteNumber ?? '');
+        return ($context === 'cca') ? 'INTERNE' : $quoteNumber;
     }
 
     public static function formatBillingInfo(?string $billingInfo, ?string $context): ?string

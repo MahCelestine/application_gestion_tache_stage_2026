@@ -108,8 +108,10 @@ class Task extends Model
 
         if (!$hasSubtasks) {
             $newEstimated = self::convertToHours($data['estimated_h'], $data['estimated_m']);
-            $hoursToAdd = self::convertToHours($additionalData['add_actual_h'] ?? 0, $additionalData['add_actual_m']);
-            $newActual = $this->actual_hours + $hoursToAdd;
+            $decimalToAdd = self::convertToHours($data['add_actual_h'], $data['add_actual_m']);
+            $decimalToReduce = self::convertToHours($data['reduce_actual_h'], $data['reduce_actual_m']);
+
+            $newActual = max(0, $this->actual_hours + $decimalToAdd - $decimalToReduce);
 
             if ($data['status'] == 'bloqué') {
                 $this->reasons()->updateOrCreate(
@@ -123,7 +125,11 @@ class Task extends Model
             $this->status = $data['status'];
 
         } else {
-            $newEstimated = $this->subtasks()->sum('estimated_hours');
+            if (($this->subtasks()->sum('estimated_hours')) > 0) {
+                $newEstimated = $this->subtasks()->sum('estimated_hours'); 
+            } else {
+                $newEstimated = isset($data['estimated_h']) ? self::convertToHours($data['estimated_h'], $data['estimated_m']) : $this->estimated_hours;
+            }
             $newActual = $this->subtasks()->sum('actual_hours');
         }
 
