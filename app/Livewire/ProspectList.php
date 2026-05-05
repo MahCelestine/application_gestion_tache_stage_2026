@@ -13,13 +13,13 @@ class ProspectList extends Component
     public $filterStatus = '';
     public $sortNom = '';
 
-    public function sortByNom() {
+    public function sortByNom()
+    {
         $this->sortNom = match ($this->sortNom) {
             'asc' => 'desc',
             'desc' => '',
             default => 'asc',
         };
-        $this->resetPage();
     }
 
     #[On('search-updated')]
@@ -45,13 +45,18 @@ class ProspectList extends Component
         ]);
         $query = Prospect::with('notes');
 
-        if($this->filterStatus) {
+        if ($this->filterStatus) {
             $query->where('status', $this->filterStatus);
         }
 
         if ($this->search) {
             $query->where('nom', 'LIKE', "%{$this->search}%");
-        };
+        }
+        ;
+
+        if ($this->sortNom) {
+            $query->orderBy('nom', $this->sortNom);
+        }
 
         $query->orderByRaw("
         CASE
@@ -70,12 +75,6 @@ class ProspectList extends Component
         ELSE 3
         END ASC
         ");
-
-        if ($this->sortNom) {
-            $query->orderBy('nom', $this->sortNom);
-        } else {
-            $query->orderBy('rdv_date', 'asc');
-        }
 
         return view('livewire.prospect-list', [
             'prospects' => $query->get(),

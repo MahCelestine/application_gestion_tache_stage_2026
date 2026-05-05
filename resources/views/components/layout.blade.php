@@ -22,11 +22,11 @@
             'mx-2 basis-2/5 flex justify-between text-lg flex-1' => $hasSideContent,
             'flex w-full justify-center gap-12 text-lg mt-3' => !$hasSideContent,
         ])>
-            <a href="/" wire:navigate class="font-semibold hover:font-normal hover:tracking-wide">Accueil</a>
-            <a href="/projet_cca" wire:navigate class="font-semibold hover:font-normal hover:tracking-wide">Projet CCA</a>
-            <a href="/gestions" wire:navigate class="font-semibold hover:font-normal hover:tracking-wide">Gestion</a>
-            <a href="/prospects" wire:navigate class="font-semibold hover:font-normal hover:tracking-wide">Prospect</a>
-            <a href="/archives" wire:navigate class="font-semibold hover:font-normal hover:tracking-wide">Archives</a>
+            <a href="/" wire:navigate class="nav-link {{ request()->is('/') ? 'active' : '' }}">Accueil</a>
+            <a href="/projet_cca" wire:navigate class="nav-link {{ request()->is('projet_cca*') ? 'active' : '' }}">Projet CCA</a>
+            <a href="/gestions" wire:navigate class="nav-link {{ request()->is('gestions*') ? 'active' : '' }}">Gestion</a>
+            <a href="/prospects" wire:navigate class="nav-link {{ request()->is('prospects*') ? 'active' : '' }}">Prospect</a>
+            <a href="/archives" wire:navigate class="nav-link {{ request()->is('archives*') ? 'active' : '' }}">Archives</a>
             <a href="{{ route('filament.admin.pages.dashboard') }}"
                 class="btn font-semibold hover:font-normal hover:tracking-wide">
                 Administration

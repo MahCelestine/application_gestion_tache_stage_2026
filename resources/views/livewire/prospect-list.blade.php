@@ -21,7 +21,7 @@
             </tr>
         </thead>
         @foreach ($prospects as $prospect)
-            <tbody wire:key="task-group-{{ $task->id }}" 
+            <tbody wire:key="prospect-group-{{ $prospect->id }}" 
         x-data 
         x-init="
             gsap.fromTo($el, 

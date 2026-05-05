@@ -187,8 +187,26 @@
         const row = document.getElementById(id);
         if (row.style.display === "none") {
             row.style.display = "table-row";
+
+            window.gsap.fromTo(row,
+                { opacity: 0, y: -10 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                }
+            );
         } else {
-            row.style.display = "none";
+            window.gsap.to(row, {
+                opacity: 0,
+                y: -10,
+                duration: 0.3,
+                ease: 'power2.in',
+                onComplete: () => {
+                    row.style.display = "none";
+                }
+            });
         }
     }
 </script>
