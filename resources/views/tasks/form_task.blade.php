@@ -1,7 +1,7 @@
 <x-layout>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <div class="max-55" x-data="subtaskManager()">
+    <div class="mx-55" x-data="subtaskManager()">
         <form action="{{ route('tasks.store') }}" method="POST" @submit="handleSubmit">
             @csrf
             <div class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
@@ -176,12 +176,14 @@
                                         <div class="flex flex-col mb-2">
                                             <label class="text-lg font-semibold">N° Devis</label>
                                             <input type="text" :name="`subtasks[${index}][quote_number]`"
-                                                x-model="subtask.quote_number" placeholder="N° Devis" :value="subtask.quote_number"
+                                                x-model="subtask.quote_number" placeholder="N° Devis"
+                                                :value="subtask.quote_number"
                                                 class="my-2 rounded-lg border-2 w-[85%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                                         </div>
                                         <div class="flex flex-col">
                                             <label class="text-lg font-semibold">Facturation</label>
-                                            <input type="text" :name="`subtasks[${index}][billing_info]`" :value="subtask.billing_info" placeholder="Facturation"
+                                            <input type="text" :name="`subtasks[${index}][billing_info]`"
+                                                :value="subtask.billing_info" placeholder="Facturation"
                                                 class="my-2 rounded-lg border-2 w-[85%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1" />
                                         </div>
                                     </div>
@@ -192,22 +194,23 @@
                             </div>
 
                             <button type="button" @click="removeSubtask(index)"
-                                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg mx-5">Supprimer</button>
+                                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg mx-5 transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Supprimer</button>
                         </div>
                     </template>
                 </div>
                 <div class="mx-5 mb-2">
                     <button type="button" @click="addSubtask()" style="margin: 10px 0;"
-                        class="bg-blue-500 py-3 px-6 rounded-4xl text-white hover:bg-blue-600 shadow-md/20">
+                        class="bg-blue-500 py-3 px-6 rounded-4xl text-white hover:bg-blue-600 transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">
                         + Ajouter une sous-tâche
                     </button>
                 </div>
             </div>
     </div>
-    <div class="flex flex-col">
+    <div class="flex flex-col mx-55">
         <small class="text-base my-2 mx-6">* Champs obligatoires</small>
-        <button type="submit" :disabled="!canSubmit" :class="!canSubmit ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'"
-            class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto">Valider</button>
+        <button type="submit" :disabled="!canSubmit"
+            :class="!canSubmit ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'"
+            class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Valider</button>
     </div>
     </form>
     </div>

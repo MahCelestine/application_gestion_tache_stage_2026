@@ -68,7 +68,8 @@
                             @endif
                         </td>
                         <td><a href="{{ route('gestions.task_edit', $task->id) }}"
-                                class="text-blue-500 hover:text-blue-600 hover:font-semibold border rounded-2xl py-1 px-2 border-blue-500">Modifier</a></td>
+                                                            class="btn-fill-animation inline-block relative z-10 text-blue-500 border border-blue-500 rounded-2xl py-1 px-3 overflow-hidden transition-colors duration-300">
+                                                            <span class="relative z-20">Modifier</span></td>
                     @else
                         <td colspan="3">Impossible de facturer si la tâche n'est pas finie</td>
                     @endif
@@ -84,7 +85,8 @@
                     <tr class="{{ $loop->last ? 'last-subtask-row' : '' }}">
                         <td class="{{ $loop->last ? 'pb-[10px]' : '' }}"></td>
                         <td><a href="{{ route('gestions.subtask_edit', $subtask->id) }}"
-                                class="text-blue-500 hover:text-blue-600 hover:font-semibold border rounded-2xl py-1 px-2 border-blue-200">Modifier</a></td>
+                                                            class="btn-fill-animation inline-block relative z-10 text-blue-500 border border-blue-200 rounded-2xl py-1 px-3 overflow-hidden transition-colors duration-300">
+                                                            <span class="relative z-20">Modifier</span></td>
                         <td>{{ $subtask->label }}</td>
                         <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">{{ $subtask->quote_number ?? '-' }}</td>
                         <td class="text-center {{ $loop->last ? 'pb-[10px]' : '' }}">{{ $subtask->billing_info ?? '-' }}</td>

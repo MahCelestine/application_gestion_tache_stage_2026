@@ -80,7 +80,8 @@
                     @endif
                     <td class="border-r-[15px] border-r-transparent  text-center"><a
                             href="{{ route('prospects.edit', $prospect->id) }}"
-                            class="text-blue-500 hover:text-blue-600 hover:font-semibold border rounded-2xl py-1 px-2 border-blue-500">Modifier</a>
+                                                            class="btn-fill-animation inline-block relative z-10 text-blue-500 border border-blue-500 rounded-2xl py-1 px-3 overflow-hidden transition-colors duration-300">
+                                                            <span class="relative z-20">Modifier</span>
                     </td>
                     <td class="border-r-[15px] border-r-transparent  text-center">
                         <form action="{{ route('prospects.transform', $prospect->id) }}" method="GET"
@@ -90,7 +91,7 @@
                         </form>
                         <button type="button"
                             onclick="Livewire.dispatch('open-delete-modal', { title: 'Transformer le prospect', message: 'Êtes-vous sûr de vouloir transformer ce prospect en client ? Cette action est irréversible.', label: 'Transformer', formId: 'transform-form-{{ $prospect->id }}' })"
-                            class="text-blue-500 hover:text-blue-600 hover:font-semibold">Transformer
+                            class="text-blue-500 hover:text-blue-600 hover:font-semibold transition-all duration-150">Transformer
                             en grande tâche</button>
                     </td>
                 </tr>

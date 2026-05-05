@@ -4,7 +4,7 @@
             @foreach ($options as $value => $optionLabel )
             <button type="button" wire:click="setFilter('{{ $value }}')"
                 @class([ 
-                'hover:font-semibold', 
+                'hover:font-semibold transition-all duration-150', 
                 'font-semibold' => $current === (string)$value, 
                 'font-normal' => $current !== (string)$value, ])>
                 {{ $optionLabel }}</button>

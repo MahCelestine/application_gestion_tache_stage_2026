@@ -167,7 +167,7 @@
             <div class="flex flex-col">
                 <small class="text-base my-2 mx-6">* Champs obligatoires</small>
                 <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto">Enregistrer
+                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Enregistrer
                     les
                     modifications</button>
             </div>
@@ -179,7 +179,7 @@
             <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
             <button type="button"
                 onclick="Livewire.dispatch('open-delete-modal', { title: 'la suppression de la grande tâche', message: 'Êtes-vous sûr de vouloir supprimer cette tâche ? Cela suprimera également toutes les sous-tâches associées.', label: 'Supprimer', formId: 'delete-form-{{ $task->id }}' })"
-                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg">Supprimer la tâche</button>
+                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Supprimer la tâche</button>
         </form>
     </div>
 

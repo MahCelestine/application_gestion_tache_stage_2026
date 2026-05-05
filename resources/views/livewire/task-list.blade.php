@@ -38,22 +38,22 @@
             @if (!($task->status === 'validé' && $filterStatus === 'validé'))
                 @if ($task->status !== 'validé' || $filterStatus || $search)
                             <tbody class="task-group-border shadow-md ml-2" wire:key="task-group-{{ $task->id }}" x-data x-init="
-                            gsap.fromTo($el, 
-                                { opacity: 0, y: 20 }, 
-                                { 
-                                    opacity: 1, 
-                                    y: 0, 
-                                    duration: 1.5, 
-                                    ease: 'power2.out',
-                                    scrollTrigger: {
-                                        trigger: $el,
-                                        start: 'top 90%',
-                                        finish: 'top 85%',
-                                        toggleActions: 'play none none reverse',
-                                    }
-                                }
-                            )
-                        ">
+                                                                    gsap.fromTo($el, 
+                                                                        { opacity: 0, y: 20 }, 
+                                                                        { 
+                                                                            opacity: 1, 
+                                                                            y: 0, 
+                                                                            duration: 1.5, 
+                                                                            ease: 'power2.out',
+                                                                            scrollTrigger: {
+                                                                                trigger: $el,
+                                                                                start: 'top 90%',
+                                                                                finish: 'top 85%',
+                                                                                toggleActions: 'play none none reverse',
+                                                                            }
+                                                                        }
+                                                                    )
+                                                                ">
                                 <tr>
                                     @if(!$isCca)
                                         <td colspan="12"></td>
@@ -96,7 +96,8 @@
                                         <td class="text-center">{{ $task->billing_info ?? '-'}}</td>
                                     @endif
                                     <td><a href="{{ route('tasks.edit', [$task->id, 'context' => $isCca ? 'cca' : 'default']) }}"
-                                            class="text-blue-500 hover:text-blue-600 hover:font-semibold border rounded-2xl py-1 px-2 border-blue-500">Modifier</a>
+                                            class="btn-fill-animation inline-block relative z-10 text-blue-500 border border-blue-500 rounded-2xl py-1 px-3 overflow-hidden transition-colors duration-300">
+                                            <span class="relative z-20">Modifier</span>
                                     </td>
                                 </tr>
                                 @if($task->status === 'bloqué' && $blocking = $task->currentBlocking())
@@ -133,8 +134,11 @@
                                 @foreach ($task->subtasks as $subtask)
                                                 <tr>
                                                     <td></td>
-                                                    <td><a href="{{ route('subtasks.edit', [$subtask->id, 'context' => $isCca ? 'cca' : 'default']) }}"
-                                                            class="text-blue-500 hover:text-blue-600 hover:font-semibold border rounded-2xl py-1 px-2 border-blue-200">Modifier</a>
+                                                    <td>
+                                                        <a href="{{ route('subtasks.edit', [$subtask->id, 'context' => $isCca ? 'cca' : 'default']) }}"
+                                                            class="btn-fill-animation inline-block relative z-10 text-blue-500 border border-blue-200 rounded-2xl py-1 px-3 overflow-hidden transition-colors duration-300">
+                                                            <span class="relative z-20">Modifier</span>
+                                                        </a>
                                                     </td>
                                                     <td>{{ $subtask->label }}</td>
                                                     <td class="{{ $subtask->status_text_class }} text-center">{{ $subtask->status }}
@@ -174,7 +178,8 @@
                         <td colspan="2"></td>
                         <td colspan="9" class="padding_ajout"><a
                                 href="{{ route('subtasks.create', ['task_id' => $task->id, 'context' => $isCca ? 'cca' : 'default']) }}"
-                                class="text-blue-500 hover:text-blue-600 hover:font-semibold">+ Ajouter une sous-tâche</a></td>
+                                class="text-blue-500 hover:text-blue-600 hover:font-semibold transition-all duration-150">+ Ajouter une
+                                sous-tâche</a></td>
                     </tr>
                     </tbody>
                 @endif

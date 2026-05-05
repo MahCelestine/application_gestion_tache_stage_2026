@@ -19,13 +19,15 @@
                     </div>
                     <div class="basis-1/2 mx-5">
                         <label class="text-lg font-semibold">N° Facture</label>
-                        <input type="text" id="billing_input" name="billing_info" x-model="billingInfo" x-effect="showPayement = billingInfo.trim() !== ''"
+                        <input type="text" id="billing_input" name="billing_info" x-model="billingInfo"
+                            x-effect="showPayement = billingInfo.trim() !== ''"
                             class="my-2  rounded-lg border-2 w-[95%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1 h-12"
                             value="{{ $task->billing_info }}">
                     </div>
                 </div>
             </div>
-            <div id="payement_status" x-show="showPayement" x-cloak class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
+            <div id="payement_status" x-show="showPayement" x-cloak
+                class="border-2 border-gray-300 rounded-xl shadow-md mb-2">
                 <h2 class="text-xl mx-6 my-2">Etat</h2>
                 <span class="block border-b-2 border-gray-300 w-[95%] m-auto"></span>
                 <div class="mt-4 mx-10">
@@ -43,7 +45,7 @@
             <div class="flex flex-col">
                 <small class="text-base my-2 mx-6">* Champs obligatoires</small>
                 <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto">Enregistrer
+                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Enregistrer
                     les modifications</button>
             </div>
         </form>

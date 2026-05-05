@@ -95,8 +95,7 @@
                                 </option>
                             </select>
                         </div>
-                        <div id="reason-container"
-                            x-show="status === 'bloqué'" x-cloak>
+                        <div id="reason-container" x-show="status === 'bloqué'" x-cloak>
                             <div class="flex flex-col mt-3">
                                 <label class="text-lg font-semibold">Raison du blocage *</label>
                                 <textarea name="reason_description" id="reason_description"
@@ -121,17 +120,19 @@
                                 </div>
                             </div>
                             <button type="button" @click="showCorrection = !showCorrection"
-                                class="bg-gray-100 hover:bg-white border-1 border-gray-300 shadow-sm py-3 font-semibold rounded-lg w-[75%] mb-2">Corriger
+                                class="bg-gray-100 hover:bg-white border-1 border-gray-300 shadow-sm py-3 font-semibold rounded-lg w-[75%] mb-2 transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Corriger
                                 le
                                 temps
                                 cumulé</button>
                             <div id="correction-actual-hour" x-show="showCorrection" x-cloak>
                                 <label class="text-lg font-semibold">Déduire du temps</label>
                                 <div>
-                                    <input type="number" name="reduce_actual_h" value="" min="0" x-effect="if(!showCorrection) { $el.value = '' }"
+                                    <input type="number" name="reduce_actual_h" value="" min="0"
+                                        x-effect="if(!showCorrection) { $el.value = '' }"
                                         class="my-2  rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
                                         h</span>
-                                    <input type="number" name="reduce_actual_m" value="" min="0" max="59" x-effect="if(!showCorrection) { $el.value = '' }"
+                                    <input type="number" name="reduce_actual_m" value="" min="0" max="59"
+                                        x-effect="if(!showCorrection) { $el.value = '' }"
                                         class="my-2  rounded-lg border-2 w-[35%] border-gray-300 focus:border-gray-400 focus:outline-gray-400 text-gray-600 px-2 py-1"><span>
                                         min</span>
                                 </div>
@@ -144,7 +145,7 @@
             <div class="flex flex-col">
                 <small class="text-base my-2 mx-6">* Champs obligatoires</small>
                 <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto">Enregistrer
+                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] m-auto transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Enregistrer
                     les
                     modifications</button>
             </div>
@@ -156,7 +157,8 @@
             <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}" />
             <button type="button"
                 onclick="Livewire.dispatch('open-delete-modal', { title: 'la suppression de la sous-tâche', message: 'Êtes-vous sûr de vouloir supprimer cette sous-tâche ?', label: 'Supprimer', formId: 'delete-form-{{ $subtask->id }}' })"
-                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg">Supprimer la
+                class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Supprimer
+                la
                 sous-tâche</button>
         </form>
 

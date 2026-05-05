@@ -98,7 +98,7 @@
             <div class="flex flex-col">
                 <small class="text-base my-2 mx-6">* Champs obligatoires</small>
                 <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] shadow-md transition-all m-auto">
+                    class="bg-blue-500 hover:bg-blue-600 text-white py-4 font-semibold rounded-lg w-[20%] shadow-md transition-all m-auto transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">
                     Valider
                 </button>
             </div>
@@ -109,7 +109,8 @@
                 id="delete-form-{{ $prospect->id }}">
                 @csrf
                 @method('DELETE')
-                <button type="button" class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg"
+                <button type="button"
+                    class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]"
                     onclick="Livewire.dispatch('open-delete-modal', { title: 'le prospect', message: 'Êtes-vous sûr de vouloir supprimer ce prospect ?', label: 'Supprimer', formId: 'delete-form-{{ $prospect->id }}' })">
                     Supprimer
                 </button>

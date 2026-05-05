@@ -5,7 +5,8 @@
 
     <x-slot:ajoutTache>
         <a href="{{ route('tasks.create') }}"
-            class="text-lg bg-blue-500 py-3 px-6 rounded-4xl text-white hover:bg-blue-600 shadow-md/20"> + Ajouter une
+            class="text-lg bg-blue-500 py-3 px-6 rounded-4xl text-white hover:bg-blue-600 transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">
+            + Ajouter une
             grande tâche</a>
     </x-slot:ajoutTache>
 
