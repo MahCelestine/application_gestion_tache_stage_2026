@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\EvolizSyncController;
 use App\Http\Controllers\ProspectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\SubtaskController;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\TaskFormEvoliz;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -40,3 +42,8 @@ Route::delete('/prospects/{prospect}', [ProspectController::class, 'destroy'])->
 
 Route::patch('/gestions/subtask/{subtask}/reset', [SubtaskController::class, 'resetEtat'])->name('gestions.subtask_reset');
 Route::patch('/gestions/task/{task}/reset', [TaskController::class, 'resetEtat'])->name('gestions.task_reset');
+
+Route::get('/sync-evoliz', [EvolizSyncController::class, 'sync'])->name('evoliz.sync');
+Route::get('/tasks/import-evoliz', function () {
+    return view('tasks.import_evoliz');
+})->name('tasks.create-evoliz');

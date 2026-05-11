@@ -14,6 +14,7 @@ class Equipe extends Model
     protected $fillable = [
         'nom',
         'prenom',
+        'color',
     ];
 
     protected function complet(): Attribute

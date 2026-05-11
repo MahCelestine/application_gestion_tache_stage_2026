@@ -63,8 +63,8 @@
             <div class="ml-4 basis-1/5 justify-end flex empty:hidden flex-1">{{ $ajoutTache ?? '' }}</div>
         @endif
     </div>
-
     <main>
+
         {{  $slot }}
     </main>
 

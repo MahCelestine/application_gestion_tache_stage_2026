@@ -24,7 +24,9 @@ class Task extends Model
         'billing_info',
         'estimated_hours',
         'actual_hours',
-        'is_paid'
+        'is_paid',
+        'evoliz_quote_id',
+        'evoliz_item_id',
     ];
 
     protected $casts = [
@@ -79,6 +81,8 @@ class Task extends Model
                 'quote_number' => self::formatQuoteNumber($data['quote_number'] ?? null, $context),
                 'billing_info' => self::formatBillingInfo($data['billing_info'] ?? null, $context),
                 'status' => 'en cours',
+                'evoliz_quote_id'=> $data['evoliz_quote_id'],
+                'evoliz_item_id'=> $data['evoliz_item_id'],
             ]);
 
             Prospect::handleConversion($data['prospect_id'] ?? null);

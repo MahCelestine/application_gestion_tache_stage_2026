@@ -76,7 +76,7 @@
                                     </td>
                                     <td class="border-r-[15px] border-r-transparent">
                                         @forelse ($task->equipes as $membre)
-                                            {{ $membre->prenom }}
+                                            <span style="color: {{ $membre->color ?? '#272727' }}">{{ $membre->prenom }}</span>
                                         @empty
                                             -
                                         @endforelse
@@ -148,7 +148,7 @@
                                                     </td>
                                                     <td>
                                                         @forelse ($subtask->equipes as $membre)
-                                                            {{ $membre->prenom }}
+                                                            <span style="color: {{ $membre->color ?? '#272727' }}">{{ $membre->prenom }}</span>
                                                         @empty
                                                             -
                                                         @endforelse
