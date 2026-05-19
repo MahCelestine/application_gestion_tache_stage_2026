@@ -85,6 +85,8 @@ class EvolizSyncController extends Controller
 
     public function sync()
     {
+        session()->forget('pending_evoliz_lines');
+
         $publicKey = env('EVOLIZ_PUBLIC_KEY');
         $secretKey = env('EVOLIZ_SECRET_KEY');
 
@@ -118,15 +120,18 @@ class EvolizSyncController extends Controller
         // 3. TRAITEMENT DES LIGNES (Items)
         foreach ($quotes as $quote) {
             // Attention : Vérifie si 'items' existe dans le JSON d'Evoliz
-            if (isset($quote['items'])) {
-                foreach ($quote['items'] as $item) {
-                    $linesToProcess[] = [
-                        'evoliz_item_id' => $item['itemid'],
-                        'evoliz_quote_id' => $quote['quoteid'],
-                        'label' => $item['designation_clean'] ?? $item['designation'],
-                        'quote_number' => $quote['document_number'],
-                        'client_name' => $quote['client']['name'] ?? 'Client Inconnu',
-                    ];
+            if (isset($quote['status_dates']['accept']) && !empty($quote['status_dates']['accept'])) {
+
+                if (isset($quote['items'])) {
+                    foreach ($quote['items'] as $item) {
+                        $linesToProcess[] = [
+                            'evoliz_item_id' => $item['itemid'],
+                            'evoliz_quote_id' => $quote['quoteid'],
+                            'label' => $item['designation_clean'] ?? $item['designation'],
+                            'quote_number' => $quote['document_number'],
+                            'client_name' => $quote['client']['name'] ?? 'Client Inconnu',
+                        ];
+                    }
                 }
             }
         }
