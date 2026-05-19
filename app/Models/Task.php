@@ -81,8 +81,8 @@ class Task extends Model
                 'quote_number' => self::formatQuoteNumber($data['quote_number'] ?? null, $context),
                 'billing_info' => self::formatBillingInfo($data['billing_info'] ?? null, $context),
                 'status' => 'en cours',
-                'evoliz_quote_id'=> $data['evoliz_quote_id'],
-                'evoliz_item_id'=> $data['evoliz_item_id'],
+                'evoliz_quote_id'=> $data['evoliz_quote_id'] ?? null,
+                'evoliz_item_id'=> $data['evoliz_item_id'] ?? null,
             ]);
 
             Prospect::handleConversion($data['prospect_id'] ?? null);
