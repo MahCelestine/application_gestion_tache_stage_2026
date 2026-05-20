@@ -81,8 +81,8 @@ class Task extends Model
                 'quote_number' => self::formatQuoteNumber($data['quote_number'] ?? null, $context),
                 'billing_info' => self::formatBillingInfo($data['billing_info'] ?? null, $context),
                 'status' => 'en cours',
-                'evoliz_quote_id'=> $data['evoliz_quote_id'] ?? null,
-                'evoliz_item_id'=> $data['evoliz_item_id'] ?? null,
+                'evoliz_quote_id' => $data['evoliz_quote_id'] ?? null,
+                'evoliz_item_id' => $data['evoliz_item_id'] ?? null,
             ]);
 
             Prospect::handleConversion($data['prospect_id'] ?? null);
@@ -130,7 +130,7 @@ class Task extends Model
 
         } else {
             if (($this->subtasks()->sum('estimated_hours')) > 0) {
-                $newEstimated = $this->subtasks()->sum('estimated_hours'); 
+                $newEstimated = $this->subtasks()->sum('estimated_hours');
             } else {
                 $newEstimated = isset($data['estimated_h']) ? self::convertToHours($data['estimated_h'], $data['estimated_m']) : $this->estimated_hours;
             }
@@ -161,14 +161,17 @@ class Task extends Model
                             ->orWhereHas('equipes', fn($eq) => $eq->where('prenom', 'LIKE', "%{$search}%"));
                     });
             });
-        })->when($request->filter_status, function ($q) use ($request) {
-            $status = $request->filter_status;
-            $q->where(function ($statusGroup) use ($status) {
-                $statusGroup->where('tasks.status', $status)
-                    ->orWhereHas('subtasks', fn($sq) => $sq->where('status', $status));
-            });
+        })->when(request()->routeIs('tasks.index') || request()->routeIs('tasks.index_cca'), function ($q) {
+            $q->where('tasks.status', '!=', 'validé');
+        })
+            ->when($request->filter_status, function ($q) use ($request) {
+                $status = $request->filter_status;
+                $q->where(function ($statusGroup) use ($status) {
+                    $statusGroup->where('tasks.status', $status)
+                        ->orWhereHas('subtasks', fn($sq) => $sq->where('status', $status));
+                });
 
-        });
+            });
     }
 
     public function scopeFiltersStatus($query, $status)

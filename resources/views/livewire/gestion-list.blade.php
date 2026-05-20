@@ -1,23 +1,23 @@
 <div>
     <table class="w-[100%] border-separate border-spacing-y-4">
-        <thead class="text-lg z-10 bg-white">
+        <thead class="text-lg z-[50] bg-white">
             <tr>
-                <th class="py-3 rounded-tl-3xl border-t-2 border-b-2 z-11 border-l-2 border-gray-300 w-[14%] sticky top-0 bg-white">
+                <th class="py-3 rounded-tl-3xl border-t-2 border-b-2 z-11 border-l-2 border-gray-300 w-[14%] sticky top-0 bg-white z-[51]">
                     <button wire:click="sortBy('Client')">Client
                         {{$sortClient === 'asc' ? '(A-Z)' : ($sortClient === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[15%] sticky top-0 bg-white">
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[15%] sticky top-0 bg-white z-[51]">
                     <button wire:click="sortBy('Task')">Grande tâche
                         {{$sortTask === 'asc' ? '(A-Z)' : ($sortTask === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[16%] sticky top-0 bg-white">
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[16%] sticky top-0 bg-white z-[51]  ">
                     <button wire:click="sortBy('Subtask')">Sous-tâche
                         {{$sortSubtask === 'asc' ? '(A-Z)' : ($sortSubtask === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[14%] sticky top-0 bg-white">Devis</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[14%] sticky top-0 bg-white">Facturation</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[15%] sticky top-0 bg-white">Payé</th>
-                <th class="py-3 rounded-tr-3xl border-t-2 border-b-2 border-r-2 border-gray-300 w-[12%] sticky top-0 bg-white"></th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[14%] sticky top-0 bg-white z-[51]">Devis</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[14%] sticky top-0 bg-white z-[51]">Facturation</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[15%] sticky top-0 bg-white z-[51]">Payé</th>
+                <th class="py-3 rounded-tr-3xl border-t-2 border-b-2 border-r-2 border-gray-300 w-[12%] sticky top-0 bg-white z-[51]"></th>
             </tr>
         </thead>
         @foreach ($tasks as $task)

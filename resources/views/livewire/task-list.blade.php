@@ -35,8 +35,7 @@
             </tr>
         </thead>
         @foreach ($tasks as $task)
-            @if (!($task->status === 'validé' && $filterStatus === 'validé'))
-                @if ($task->status !== 'validé' || $filterStatus || $search)
+            @if ($task->status !== 'validé')
                             <tbody class="task-group-border shadow-md ml-2" wire:key="task-group-{{ $task->id }}" x-data x-init="
                                                                     gsap.fromTo($el, 
                                                                         { opacity: 0, y: 20 }, 
@@ -183,7 +182,6 @@
                     </tr>
                     </tbody>
                 @endif
-            @endif
         @endforeach
 </table>
 
