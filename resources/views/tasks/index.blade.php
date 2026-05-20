@@ -17,6 +17,7 @@
         'BAT ok' => 'BAT OK',
         'validé' => 'Validés'
     ]" :current="request('filter_status', '')" />
+    
 
     <div class="flex items-center gap-3">
         <a href="{{ route('evoliz.sync') }}"
