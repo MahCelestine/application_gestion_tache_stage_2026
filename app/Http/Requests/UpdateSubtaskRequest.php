@@ -23,7 +23,7 @@ class UpdateSubtaskRequest extends FormRequest
     {
         return [
             'label' => 'required|string',
-            'status' => 'required|in:en cours,attente BAT,validé,bloqué',
+            'status' => 'required|in:en cours,attente BAT,BAT ok,validé,bloqué',
             'reason_description' => 'nullable|string|required_if:status,bloqué',
             'estimated_h' => 'required|numeric|min:0',
             'estimated_m' => 'required|numeric|min:0|max:59',

@@ -25,6 +25,7 @@ class SubtasksTable
                     ->color(fn(string $state): string => match ($state) {
                         'en cours' => 'info', // Bleu
                         'attente BAT' => 'warning',  // Orange/Jaune
+                        'BAT ok' => 'primary',  // Bleu foncé
                         'validé' => 'success',   // Vert
                         'bloqué' => 'danger',    // Rouge
                         default => 'gray',       // Gris par défaut

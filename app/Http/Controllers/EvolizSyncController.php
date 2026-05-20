@@ -117,9 +117,7 @@ class EvolizSyncController extends Controller
         $quotes = $response->json()['data'] ?? [];
         $linesToProcess = [];
 
-        // 3. TRAITEMENT DES LIGNES (Items)
         foreach ($quotes as $quote) {
-            // Attention : Vérifie si 'items' existe dans le JSON d'Evoliz
             if (isset($quote['status_dates']['accept']) && !empty($quote['status_dates']['accept'])) {
 
                 if (isset($quote['items'])) {

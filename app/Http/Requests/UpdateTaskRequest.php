@@ -35,7 +35,7 @@ class UpdateTaskRequest extends FormRequest
 
         if (!$hasSubtasks) {
             $rules += [
-                'status' => 'required|in:en cours,attente BAT,validé,bloqué',
+                'status' => 'required|in:en cours,attente BAT,BAT ok,validé,bloqué',
                 'estimated_h' => 'required|numeric|min:0',
                 'estimated_m' => 'required|numeric|min:0|max:59',
                 'add_actual_h' => 'nullable|numeric|min:0',

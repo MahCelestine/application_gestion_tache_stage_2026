@@ -91,6 +91,7 @@
                                     Attente BAT</option>
                                 <option value="bloqué" {{ $subtask->status == 'bloqué' ? 'selected' : '' }}>Bloqué
                                 </option>
+                                <option value="BAT ok" {{ $subtask->status == 'BAT ok' ? 'selected' : '' }}>BAT ok
                                 <option value="validé" {{ $subtask->status == 'validé' ? 'selected' : '' }}>Validé
                                 </option>
                             </select>

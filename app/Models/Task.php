@@ -190,7 +190,7 @@ class Task extends Model
             return $query->orderBy('label', $request->sort_task);
         }
 
-        return $query->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'en cours', 'validé')")
+        return $query->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'BAT ok', 'en cours', 'validé')")
             ->orderBy('due_date', 'asc');
     }
 

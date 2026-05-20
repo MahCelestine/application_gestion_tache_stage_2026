@@ -14,6 +14,7 @@
         'en cours' => 'En cours',
         'bloqué' => 'Bloqués',
         'attente BAT' => 'En attente de BAT',
+        'BAT ok' => 'BAT OK',
         'validé' => 'Validés'
     ]" :current="request('filter_status', '')" />
 

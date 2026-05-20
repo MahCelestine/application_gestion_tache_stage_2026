@@ -107,6 +107,7 @@
                                     <option value="attente BAT" {{ $task->status == 'attente BAT' ? 'selected' : '' }}>Attente
                                         BAT</option>
                                     <option value="bloqué" {{ $task->status == 'bloqué' ? 'selected' : '' }}>Bloqué</option>
+                                    <option value="BAT ok" {{ $task->status == 'BAT ok' ? 'selected' : '' }}>BAT ok</option>
                                     <option value="validé" {{ $task->status == 'validé' ? 'selected' : '' }}>Validé</option>
                                 </select>
                             </div>

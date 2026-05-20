@@ -30,6 +30,7 @@ class TasksTable
                     ->color(fn(string $state): string => match ($state) {
                         'en cours' => 'info', // bleu
                         'attente BAT' => 'warning',  // orange
+                        'BAT ok' => 'primary',  // bleu foncé
                         'validé' => 'success',   // Vert
                         'bloqué' => 'danger',    // Rouge
                         default => 'gray',       // Gris par défaut

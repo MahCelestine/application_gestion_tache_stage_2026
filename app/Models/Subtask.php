@@ -78,6 +78,8 @@ class Subtask extends Model
             $parent->status = 'bloqué';
         } elseif ($subtasks->where('status', 'attente BAT')->count() > 0) {
             $parent->status = 'attente BAT';
+        } elseif ($subtasks->where('status', 'BAT ok')->count() > 0) {
+            $parent->status = 'BAT ok';
         } elseif ($subtasks->where('status', '!=', 'validé')->count() === 0) {
             $parent->status = 'validé';
         } else {
@@ -147,7 +149,7 @@ class Subtask extends Model
             $q->where('status', $status);
         })
         
-        ->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'en cours', 'validé') ASC")
+        ->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'BAT ok', 'en cours', 'validé') ASC")
         ->orderBy('due_date', 'asc')
         ->orderBy('label', $sortOrder ?: 'asc');
 }
