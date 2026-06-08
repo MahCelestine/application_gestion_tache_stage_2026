@@ -194,8 +194,8 @@
                     modifications</button>
             </div>
         </form>
-
-        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" id="delete-form-{{ $task->id }}">
+        <div class="flex">
+        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" id="delete-form-{{ $task->id }}" class="mr-4">
             @csrf
             @method('DELETE')
             <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
@@ -204,6 +204,16 @@
                 class="bg-red-500 hover:bg-red-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Supprimer
                 la tâche</button>
         </form>
+
+        <form action="{{ route('tasks.duplicate', $task->id) }}" method="POST" id="duplicate-form-{{ $task->id }}">
+            @csrf
+            <input type="hidden" name="redirect_to" value="{{ $isCCA ? 'tasks.cca' : 'tasks.index' }}">
+            <button type="button"
+                onclick="Livewire.dispatch('open-delete-modal', { title: 'la dupplication de la grande tâche et ses sous-tâches', message: 'Êtes-vous sûr de vouloir dupliquer cette tâche ? Cela dupliquera également toutes les sous-tâches associées.', label: 'Dupliquer', formId: 'duplicate-form-{{ $task->id }}' })"
+                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg transition-all duration-150 shadow-[0_4px_2px_0_rgba(0,0,0,0.1)] hover:translate-y-[2px] active:translate-y-[4px] hover:shadow-[0_2px_5px_0_rgba(0,0,0,0.2)]">Dupliquer
+                la tâche</button>
+        </form>
+        </div>
     </div>
 
     <livewire:loading-overlay />
@@ -229,6 +239,17 @@
         });
 
         window.addEventListener('do-submit-delete', event => {
+            const form = document.getElementById(event.detail.formId);
+            if (form) {
+                const overlay = document.getElementById('loading-overlay');
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                }
+                form.submit();
+            }
+        })
+
+        window.addEventListener('do-submit-duplicate', event => {
             const form = document.getElementById(event.detail.formId);
             if (form) {
                 const overlay = document.getElementById('loading-overlay');

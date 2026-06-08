@@ -148,6 +148,30 @@ class Task extends Model
         ]);
     }
 
+    public function duplicateWithSubtasks()
+    {
+        return DB::transaction(function () {
+            $newTask = $this->replicate();
+            $newTask->due_date = $this->due_date ? $this->due_date->copy()->addMonth() : null;
+            $newTask->status = 'en cours';
+            $newTask->actual_hours = 0;
+            $newTask->quote_number = "??";
+            $newTask->save();
+
+            foreach ($this->subtasks as $subtask) {
+                $newSubtask = $subtask->replicate();
+                $newSubtask->task_id = $newTask->id;
+                $newSubtask->due_date = $subtask->due_date ? $subtask->due_date->copy()->addMonth() : null;
+                $newSubtask->status = 'en cours';
+                $newSubtask->actual_hours = 0;
+                $newSubtask->quote_number = "??";
+                $newSubtask->save();
+            }
+
+            return $newTask;
+        });
+    }
+
     public function scopeFiltersSearch(Builder $query, $request)
     {
         return $query->when($request->search, function ($q) use ($request) {

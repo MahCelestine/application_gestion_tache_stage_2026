@@ -96,6 +96,14 @@ class TaskController extends Controller
         return redirect()->route('gestions.gestion');
     }
 
+    public function duplicate(Request $request, Task $task)
+    {
+        $newTask = $task->duplicateWithSubtasks();
+
+        $redirectRoute = $request->input('redirect_to', 'tasks.index');
+        return redirect()->route($redirectRoute);
+    }
+
     public function destroy(Request $request, Task $task)
     {
         $task->equipes()->detach();

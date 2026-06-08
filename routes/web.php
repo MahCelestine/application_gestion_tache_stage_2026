@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::post('/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');
     Route::post('/prospects', [ProspectController::class, 'store'])->name('prospects.store');
+        Route::post('/tasks/{task}/duplicate', [TaskController::class, 'duplicate'])->name('tasks.duplicate');
 
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::put('/subtasks/{subtask}', [SubtaskController::class, 'update'])->name('subtasks.update');
