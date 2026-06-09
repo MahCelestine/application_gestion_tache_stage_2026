@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\TrackableTime;
 use Illuminate\Support\Facades\DB;
+use App\Models\DailyAssignment;
 
 class Task extends Model
 {
@@ -28,6 +29,8 @@ class Task extends Model
         'evoliz_quote_id',
         'evoliz_item_id',
     ];
+
+    public $importantFieldsWereChanged = false;
 
     protected $casts = [
         'is_paid' => 'boolean',
@@ -89,7 +92,7 @@ class Task extends Model
 
             if (!empty($data['subtasks'])) {
                 foreach ($data['subtasks'] as $subData) {
-                    $task->subtasks()->create([
+                    $subtask = $task->subtasks()->create([
                         'label' => $subData['label'],
                         'due_date' => $subData['due_date'],
                         'estimated_hours' => self::convertToHours($subData['estimated_h'], $subData['estimated_m']),
@@ -98,6 +101,18 @@ class Task extends Model
                         'quote_number' => $subData['quote_number'] ?? $task->quote_number,
                         'billing_info' => $subData['billing_info'] ?? null,
                     ]);
+
+                    if (!empty($subData['equipe_ids'])) {
+                        $subtask->equipes()->sync($subData['equipe_ids']);
+
+                        $prenoms = \DB::table('equipes')
+                            ->whereIn('id', $subData['equipe_ids'])
+                            ->pluck('prenom');
+
+                        foreach ($prenoms as $prenom) {
+                            DailyAssignment::incrementTaskCountForToday((string) $prenom);
+                        }
+                    }
                 }
                 $task->subtasks()->first()->syncParentTask();
             }
@@ -108,6 +123,18 @@ class Task extends Model
 
     public function updateWithLogic(array $data, array $additionalData)
     {
+        $this->fill([
+            'label' => $data['label'],
+            'due_date' => $data['due_date'],
+            'quote_number' => $data['quote_number'] ?? null,
+            'billing_info' => $data['billing_info'] ?? null,
+            'client_id' => $data['client_id'],
+        ]);
+
+        $importantFieldChanged = $this->isDirty(['label', 'due_date', 'quote_number', 'billing_info', 'client_id']);
+
+        $this->importantFieldsWereChanged = $importantFieldChanged;
+
         $hasSubtasks = $this->subtasks()->exists();
 
         if (!$hasSubtasks) {

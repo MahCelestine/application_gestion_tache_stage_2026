@@ -17,7 +17,7 @@
         'BAT ok' => 'BAT OK',
         'validé' => 'Validés'
     ]" :current="request('filter_status', '')" />
-    
+
 
     <div class="flex items-center gap-3">
         <a href="{{ route('evoliz.sync') }}"
@@ -36,6 +36,25 @@
                 À jour
             </div>
         @endif
+
+        <div class="flex items-center gap-2 border-l pl-3 border-gray-200">
+            @php
+                $dailyAssignments = \App\Models\DailyAssignment::orderBy('task_count', 'desc')->get();
+            @endphp
+
+            @forelse($dailyAssignments as $assignment)
+                <div
+                    class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-xl text-xs font-medium text-indigo-700 shadow-sm animate-fade-in">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span>{{ $assignment->name }}</span>
+                    <span class="bg-indigo-200 text-indigo-900 font-bold px-1.5 py-0.2 rounded-md ml-0.5">
+                        {{ $assignment->task_count }}
+                    </span>
+                </div>
+            @empty
+                <span class="text-xs text-gray-400 italic">Aucune nouvelle tâche aujourd'hui</span>
+            @endforelse
+        </div>
     </div>
 
     <livewire:task-list :isCca="false" />

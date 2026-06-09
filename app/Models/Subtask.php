@@ -25,6 +25,7 @@ class Subtask extends Model
         'actual_hours',
         'is_paid'
     ];
+    public $importantFieldsWereChanged = false;
 
     protected $casts = [
         'is_paid' => 'boolean',
@@ -34,9 +35,9 @@ class Subtask extends Model
     public function currentBlocking()
     {
         return $this->reasons
-        ->where('is_finish', false)
-        ->sortByDesc('created_at')
-        ->first();
+            ->where('is_finish', false)
+            ->sortByDesc('created_at')
+            ->first();
     }
 
     public function task()
@@ -91,7 +92,7 @@ class Subtask extends Model
 
     public static function createWithLogic(array $data, bool $context = null)
     {
-        
+
         $subtask = self::create([
             'task_id' => $data['task_id'],
             'label' => $data['label'],
@@ -110,6 +111,22 @@ class Subtask extends Model
 
     public function updateLogic(array $data, array $timeInputs, $isCCA = false)
     {
+        $newEstimated = self::convertToHours($timeInputs['estimated_h'], $timeInputs['estimated_m']);
+        $decimalToAdd = self::convertToHours($timeInputs['add_actual_h'], $timeInputs['add_actual_m']);
+        $decimalToReduce = self::convertToHours($timeInputs['reduce_actual_h'], $timeInputs['reduce_actual_m']);
+        $newActualTotal = max(0, $this->actual_hours + $decimalToAdd - $decimalToReduce);
+
+        $this->fill([
+            'label' => $data['label'],
+            'estimated_hours' => $newEstimated,
+            'actual_hours' => $newActualTotal,
+            'due_date' => $data['due_date'],
+            'quote_number' => $isCCA ? 'INTERNE' : ($data['quote_number'] ?? null),
+            'billing_info' => $isCCA ? 'OFFERT' : ($data['billing_info'] ?? null),
+        ]);
+
+        $this->importantFieldsWereChanged = $this->isDirty(['label', 'estimated_hours', 'actual_hours', 'due_date', 'quote_number', 'billing_info']);
+
         if ($data['status'] == 'bloqué') {
             $this->reasons()->updateOrCreate(
                 ['is_finish' => false],
@@ -119,21 +136,9 @@ class Subtask extends Model
             $this->reasons()->where('is_finish', false)->update(['is_finish' => true]);
         }
 
-        $newEstimated = self::convertToHours($timeInputs['estimated_h'], $timeInputs['estimated_m']);
-        $decimalToAdd = self::convertToHours($timeInputs['add_actual_h'], $timeInputs['add_actual_m']);
-        $decimalToReduce = self::convertToHours($timeInputs['reduce_actual_h'], $timeInputs['reduce_actual_m']);
+        $this->status = $data['status'];
 
-        $newActualTotal = max(0, $this->actual_hours + $decimalToAdd - $decimalToReduce);
-
-        $this->update([
-            'status' => $data['status'],
-            'label' => $data['label'],
-            'estimated_hours' => $newEstimated,
-            'actual_hours' => $newActualTotal,
-            'due_date' => $data['due_date'],
-            'quote_number' => $isCCA ? 'INTERNE' : ($data['quote_number'] ?? null),
-            'billing_info' => $isCCA ? 'OFFERT' : ($data['billing_info'] ?? null),
-        ]);
+        $this->save();
 
         $this->syncParentTask();
 
@@ -141,18 +146,18 @@ class Subtask extends Model
     }
 
     public function scopeFiltersSortSub($query, $search, $status, $sortOrder)
-{
-    return $query->when($search, function ($q) use ($search) {
+    {
+        return $query->when($search, function ($q) use ($search) {
             $q->where('label', 'LIKE', "%{$search}%");
         })
-        ->when($status, function ($q) use ($status) {
-            $q->where('status', $status);
-        })
-        
-        ->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'BAT ok', 'en cours', 'validé') ASC")
-        ->orderBy('due_date', 'asc')
-        ->orderBy('label', $sortOrder ?: 'asc');
-}
+            ->when($status, function ($q) use ($status) {
+                $q->where('status', $status);
+            })
+
+            ->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'BAT ok', 'en cours', 'validé') ASC")
+            ->orderBy('due_date', 'asc')
+            ->orderBy('label', $sortOrder ?: 'asc');
+    }
 
     public function scopeFiltersPaidSub($query, $search, $filterPayment, $sortOrder)
     {
