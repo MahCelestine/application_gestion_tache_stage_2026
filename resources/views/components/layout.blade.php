@@ -69,6 +69,26 @@
     </main>
 
     @livewireScripts
+
+    <script>
+        function removeGhostOverlays() {
+            document.body.style.overflow = 'auto';
+            document.body.style.pointerEvents = 'auto';
+            document.body.classList.remove('modal-open', 'overflow-hidden');
+            const overlays = document.querySelectorAll('.modal-backdrop, [class*="backdrop-"], .fixed.inset-0.bg-black\\/50');
+            overlays.forEach(overlay => {
+                overlay.remove();
+            });
+        }
+
+        document.addEventListener("livewire:navigated", () => {
+            removeGhostOverlays();
+            if (typeof ScrollTrigger !== 'undefined') {
+                ScrollTrigger.refresh();
+            }
+        });
+        document.addEventListener("DOMContentLoaded", removeGhostOverlays);
+    </script>
 </body>
 
 </html>
