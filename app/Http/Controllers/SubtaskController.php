@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\Subtask;
 use App\Http\Requests\StoreSubtaskRequest;
 use App\Http\Requests\UpdateSubtaskRequest;
+use App\Models\DailyAssignment;
 
 class SubtaskController extends Controller
 {
@@ -19,6 +20,11 @@ class SubtaskController extends Controller
         );
 
         $subtask->equipes()->sync($request->equipe_ids ?? []);
+
+        $subtask->load('equipes');
+        foreach ($subtask->equipes as $equipe) {
+            DailyAssignment::incrementTaskCountForToday($equipe->prenom);
+        } 
 
         $redirect = $request->input('redirect_to', 'task.index');
         return redirect()->route($redirect);
@@ -43,7 +49,22 @@ class SubtaskController extends Controller
             ($request->input('context') === 'cca')
         );
 
-        $subtask->equipes()->sync($request->equipe_ids ?? []);
+        $importantFieldChanged = $subtask->importantFieldsWereChanged ?? false;
+
+    $changes = $subtask->equipes()->sync($request->equipe_ids ?? []);
+    $newlyAssignedIds = $changes['attached'] ?? [];
+
+    if (!empty($newlyAssignedIds)) {
+        $prenoms = \DB::table('equipes')->whereIn('id', $newlyAssignedIds)->pluck('prenom');
+        foreach ($prenoms as $prenom) {
+            DailyAssignment::incrementTaskCountForToday((string) $prenom);
+        }
+    } elseif ($importantFieldChanged) {
+        $subtask->load('equipes');
+        foreach ($subtask->equipes as $equipe) {
+            DailyAssignment::incrementTaskCountForToday((string) $equipe->prenom);
+        }
+    }
 
         $redirect = $request->input('redirect_to', 'task.index');
         return redirect()->route($redirect);

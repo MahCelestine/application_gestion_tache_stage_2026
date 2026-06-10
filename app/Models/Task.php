@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\TrackableTime;
 use Illuminate\Support\Facades\DB;
+use App\Models\DailyAssignment;
 
 class Task extends Model
 {
@@ -28,6 +29,8 @@ class Task extends Model
         'evoliz_quote_id',
         'evoliz_item_id',
     ];
+
+    public $importantFieldsWereChanged = false;
 
     protected $casts = [
         'is_paid' => 'boolean',
@@ -81,15 +84,15 @@ class Task extends Model
                 'quote_number' => self::formatQuoteNumber($data['quote_number'] ?? null, $context),
                 'billing_info' => self::formatBillingInfo($data['billing_info'] ?? null, $context),
                 'status' => 'en cours',
-                'evoliz_quote_id'=> $data['evoliz_quote_id'],
-                'evoliz_item_id'=> $data['evoliz_item_id'],
+                'evoliz_quote_id' => $data['evoliz_quote_id'] ?? null,
+                'evoliz_item_id' => $data['evoliz_item_id'] ?? null,
             ]);
 
             Prospect::handleConversion($data['prospect_id'] ?? null);
 
             if (!empty($data['subtasks'])) {
                 foreach ($data['subtasks'] as $subData) {
-                    $task->subtasks()->create([
+                    $subtask = $task->subtasks()->create([
                         'label' => $subData['label'],
                         'due_date' => $subData['due_date'],
                         'estimated_hours' => self::convertToHours($subData['estimated_h'], $subData['estimated_m']),
@@ -98,6 +101,18 @@ class Task extends Model
                         'quote_number' => $subData['quote_number'] ?? $task->quote_number,
                         'billing_info' => $subData['billing_info'] ?? null,
                     ]);
+
+                    if (!empty($subData['equipe_ids'])) {
+                        $subtask->equipes()->sync($subData['equipe_ids']);
+
+                        $prenoms = \DB::table('equipes')
+                            ->whereIn('id', $subData['equipe_ids'])
+                            ->pluck('prenom');
+
+                        foreach ($prenoms as $prenom) {
+                            DailyAssignment::incrementTaskCountForToday((string) $prenom);
+                        }
+                    }
                 }
                 $task->subtasks()->first()->syncParentTask();
             }
@@ -108,6 +123,18 @@ class Task extends Model
 
     public function updateWithLogic(array $data, array $additionalData)
     {
+        $this->fill([
+            'label' => $data['label'],
+            'due_date' => $data['due_date'],
+            'quote_number' => $data['quote_number'] ?? null,
+            'billing_info' => $data['billing_info'] ?? null,
+            'client_id' => $data['client_id'],
+        ]);
+
+        $importantFieldChanged = $this->isDirty(['label', 'due_date', 'quote_number', 'billing_info', 'client_id']);
+
+        $this->importantFieldsWereChanged = $importantFieldChanged;
+
         $hasSubtasks = $this->subtasks()->exists();
 
         if (!$hasSubtasks) {
@@ -130,7 +157,7 @@ class Task extends Model
 
         } else {
             if (($this->subtasks()->sum('estimated_hours')) > 0) {
-                $newEstimated = $this->subtasks()->sum('estimated_hours'); 
+                $newEstimated = $this->subtasks()->sum('estimated_hours');
             } else {
                 $newEstimated = isset($data['estimated_h']) ? self::convertToHours($data['estimated_h'], $data['estimated_m']) : $this->estimated_hours;
             }
@@ -148,6 +175,30 @@ class Task extends Model
         ]);
     }
 
+    public function duplicateWithSubtasks()
+    {
+        return DB::transaction(function () {
+            $newTask = $this->replicate();
+            $newTask->due_date = $this->due_date ? $this->due_date->copy()->addMonth() : null;
+            $newTask->status = 'en cours';
+            $newTask->actual_hours = 0;
+            $newTask->quote_number = "??";
+            $newTask->save();
+
+            foreach ($this->subtasks as $subtask) {
+                $newSubtask = $subtask->replicate();
+                $newSubtask->task_id = $newTask->id;
+                $newSubtask->due_date = $subtask->due_date ? $subtask->due_date->copy()->addMonth() : null;
+                $newSubtask->status = 'en cours';
+                $newSubtask->actual_hours = 0;
+                $newSubtask->quote_number = "??";
+                $newSubtask->save();
+            }
+
+            return $newTask;
+        });
+    }
+
     public function scopeFiltersSearch(Builder $query, $request)
     {
         return $query->when($request->search, function ($q) use ($request) {
@@ -161,14 +212,17 @@ class Task extends Model
                             ->orWhereHas('equipes', fn($eq) => $eq->where('prenom', 'LIKE', "%{$search}%"));
                     });
             });
-        })->when($request->filter_status, function ($q) use ($request) {
-            $status = $request->filter_status;
-            $q->where(function ($statusGroup) use ($status) {
-                $statusGroup->where('tasks.status', $status)
-                    ->orWhereHas('subtasks', fn($sq) => $sq->where('status', $status));
-            });
+        })->when(request()->routeIs('tasks.index') || request()->routeIs('tasks.index_cca'), function ($q) {
+            $q->where('tasks.status', '!=', 'validé');
+        })
+            ->when($request->filter_status, function ($q) use ($request) {
+                $status = $request->filter_status;
+                $q->where(function ($statusGroup) use ($status) {
+                    $statusGroup->where('tasks.status', $status)
+                        ->orWhereHas('subtasks', fn($sq) => $sq->where('status', $status));
+                });
 
-        });
+            });
     }
 
     public function scopeFiltersStatus($query, $status)
@@ -190,7 +244,7 @@ class Task extends Model
             return $query->orderBy('label', $request->sort_task);
         }
 
-        return $query->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'en cours', 'validé')")
+        return $query->orderByRaw("FIELD(status, 'bloqué', 'attente BAT', 'BAT ok', 'en cours', 'validé')")
             ->orderBy('due_date', 'asc');
     }
 

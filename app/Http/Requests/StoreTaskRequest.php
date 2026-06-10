@@ -37,6 +37,7 @@ class StoreTaskRequest extends FormRequest
             'subtasks.*.estimated_h' => 'required|numeric|min:0',
             'subtasks.*.estimated_m' => 'required|numeric|min:0|max:59',
             'subtasks.*.due_date' => 'required|date',
+            'subtasks.*.equipe_ids' => 'nullable|array',
         ];
     }
 }

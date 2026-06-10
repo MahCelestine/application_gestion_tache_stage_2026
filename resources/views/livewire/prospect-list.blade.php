@@ -3,20 +3,20 @@
         <thead class="text-lg z-10 bg-white">
             <tr>
                 <th
-                    class="py-3 rounded-tl-3xl z-11 border-t-2 border-b-2 border-l-2 border-gray-300 w-[12%] sticky top-0 bg-white">
+                    class="py-3 rounded-tl-3xl z-11 border-t-2 border-b-2 border-l-2 border-gray-300 w-[12%] sticky top-0 bg-white z-[51]">
                     <button wire:click="sortByNom()">Nom
                         {{$sortNom === 'asc' ? '(A-Z)' : ($sortNom === 'desc' ? '(Z-A)' : '') }}</button>
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[9%] sticky top-0 bg-white">État</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[10%] sticky top-0 bg-white">Date du RDV</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white">Réponses</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white">Relance</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white">Source</th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[20%] sticky top-0 bg-white">Info complémentaire
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[9%] sticky top-0 bg-white z-[51]">État</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[10%] sticky top-0 bg-white z-[51]">Date du RDV</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white z-[51]">Réponses</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[7%] sticky top-0 bg-white z-[51]">Relance</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white z-[51]">Source</th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[20%] sticky top-0 bg-white z-[51]">Info complémentaire
                 </th>
-                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white"></th>
+                <th class="py-3 border-t-2 border-b-2 border-gray-300 w-[8%] sticky top-0 bg-white z-[51]"></th>
                 <th
-                    class="py-3 rounded-tr-3xl border-t-2 border-b-2 border-r-2 border-gray-300 w-[18%] sticky top-0 bg-white">
+                    class="py-3 rounded-tr-3xl border-t-2 border-b-2 border-r-2 border-gray-300 w-[18%] sticky top-0 bg-white z-[51]">
                 </th>
             </tr>
         </thead>

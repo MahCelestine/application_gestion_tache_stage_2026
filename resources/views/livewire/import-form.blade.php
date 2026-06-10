@@ -213,7 +213,7 @@
                     const overlay = document.getElementById('loading-overlay');
                     if (overlay) overlay.style.display = 'flex';
 
-                    await new Prommise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 1000));
 
                     this.$wire.set('subtasks', this.subtasks);
                     this.$wire.save().then(() => {

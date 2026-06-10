@@ -10,6 +10,7 @@ use App\Models\Prospect;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Models\DailyAssignment;
 
 class TaskController extends Controller
 {
@@ -18,6 +19,11 @@ class TaskController extends Controller
         $task = Task::createWithLogicAndSubtask($request->validated());
 
         $task->equipes()->sync($request->equipe_ids ?? []);
+
+        $task->load('equipes');
+        foreach ($task->equipes as $equipe) {
+            DailyAssignment::incrementTaskCountForToday($equipe->prenom);
+        }
 
         $redirectRoute = $request->input('redirect_to', 'tasks.index');
         return redirect()->route($redirectRoute);
@@ -77,7 +83,22 @@ class TaskController extends Controller
     {
         $task->updateWithLogic($request->validated(), $request->only(['add_actual_h', 'add_actual_m']));
 
-        $task->equipes()->sync($request->equipe_ids ?? []);
+        $importantFieldChanged = $task->importantFieldsWereChanged ?? false;
+
+        $changes = $task->equipes()->sync($request->equipe_ids ?? []);
+        $newlyAssignedIds = $changes['attached'] ?? [];
+
+        if (!empty($newlyAssignedIds)) {
+            $prenoms = \DB::table('equipes')->whereIn('id', $newlyAssignedIds)->pluck('prenom');
+            foreach ($prenoms as $prenom) {
+                DailyAssignment::incrementTaskCountForToday((string) $prenom);
+            }
+        } elseif ($importantFieldChanged) {
+            $task->load('equipes');
+            foreach ($task->equipes as $equipe) {
+                DailyAssignment::incrementTaskCountForToday((string) $equipe->prenom);
+            }
+        }
 
         $redirectRoute = $request->input('redirect_to', 'tasks.index');
         return redirect()->route($redirectRoute);
@@ -94,6 +115,14 @@ class TaskController extends Controller
         $task->update($validated);
 
         return redirect()->route('gestions.gestion');
+    }
+
+    public function duplicate(Request $request, Task $task)
+    {
+        $newTask = $task->duplicateWithSubtasks();
+
+        $redirectRoute = $request->input('redirect_to', 'tasks.index');
+        return redirect()->route($redirectRoute);
     }
 
     public function destroy(Request $request, Task $task)

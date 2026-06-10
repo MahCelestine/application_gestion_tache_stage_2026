@@ -8,6 +8,7 @@
         'en cours' => 'En cours',
         'bloqué' => 'Bloqués',
         'attente BAT' => 'En attente de BAT',
+        'BAT ok' => 'BAT ok',
         'validé' => 'Validés'
     ]" :current="request('filter_status', '')" />
     <x-slot:searchBar>
