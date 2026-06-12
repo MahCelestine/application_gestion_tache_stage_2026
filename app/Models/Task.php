@@ -123,11 +123,8 @@ class Task extends Model
 
     public function updateWithLogic(array $data, array $additionalData = [])
     {
-        // FIX SÉCURITÉ : Si 'status' n'est pas fourni dans $data, on prend la valeur actuelle
-        // Cela évite l'erreur "Undefined array key" si le formulaire ne l'envoie pas.
         $targetStatus = $data['status'] ?? $this->status;
 
-        // Ta ligne d'origine, maintenant sécurisée avec $targetStatus
         $statusPassedToBatOk = ($targetStatus === 'BAT ok' && $this->status !== 'BAT ok');
 
         $this->fill([
@@ -151,7 +148,6 @@ class Task extends Model
 
             $newActual = max(0, $this->actual_hours + $decimalToAdd - $decimalToReduce);
 
-            // Utilisation de la variable sécurisée ici aussi
             if ($targetStatus == 'bloqué') {
                 $this->reasons()->updateOrCreate(
                     ['is_finish' => false],
@@ -161,7 +157,6 @@ class Task extends Model
                 $this->reasons()->where('is_finish', false)->update(['is_finish' => true]);
             }
 
-            // Ta ligne d'origine qui applique le statut
             $this->status = $targetStatus;
 
         } else {
@@ -176,10 +171,8 @@ class Task extends Model
         $this->estimated_hours = $newEstimated;
         $this->actual_hours = $newActual;
 
-        // Sauvegarde globale de l'instance
         $saved = $this->save();
 
-        // Enregistrement dans le résumé journalier si un champ critique a bougé
         if ($saved && $this->importantFieldsWereChanged) {
             foreach ($this->equipes as $equipe) {
                 DailyAssignment::incrementTaskCountForToday(
