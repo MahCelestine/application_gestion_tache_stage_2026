@@ -111,6 +111,8 @@ class Subtask extends Model
 
     public function updateLogic(array $data, array $timeInputs, $isCCA = false)
     {
+        $statusPassedToBatOk = ($data['status'] === 'BAT ok' && $this->status !== 'BAT ok');
+
         $newEstimated = self::convertToHours($timeInputs['estimated_h'], $timeInputs['estimated_m']);
         $decimalToAdd = self::convertToHours($timeInputs['add_actual_h'], $timeInputs['add_actual_m']);
         $decimalToReduce = self::convertToHours($timeInputs['reduce_actual_h'], $timeInputs['reduce_actual_m']);
@@ -125,7 +127,8 @@ class Subtask extends Model
             'billing_info' => $isCCA ? 'OFFERT' : ($data['billing_info'] ?? null),
         ]);
 
-        $this->importantFieldsWereChanged = $this->isDirty(['label', 'estimated_hours', 'actual_hours', 'due_date', 'quote_number', 'billing_info']);
+        $importantFieldChanged = $this->isDirty(['label', 'estimated_hours', 'actual_hours', 'due_date', 'quote_number', 'billing_info']);
+        $this->importantFieldsWereChanged = ($importantFieldChanged || $statusPassedToBatOk);
 
         if ($data['status'] == 'bloqué') {
             $this->reasons()->updateOrCreate(

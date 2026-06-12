@@ -6,9 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class DailyAssignment extends Model
 {
-    protected $fillable = ['name', 'assigned_date'];
+    protected $fillable = ['name', 'task_count'];
 
-    public static function incrementTaskCountForToday(?string $name): void
+    protected $casts = [
+        'created_tasks' => 'array',
+        'created_subtasks' => 'array',
+        'updated_tasks' => 'array',
+        'updated_subtasks' => 'array',
+    ];
+
+    public static function incrementTaskCountForToday(?string $name, int $id, string $type, string $action): void
     {
         $name = trim($name);
 
@@ -16,19 +23,26 @@ class DailyAssignment extends Model
             return;
         }
 
-        $exists = self::where('name', $name)->exists();
+        $assignment = self::firstOrNew(['name' => $name]);
 
-        if (!$exists) {
-            try {
-                self::create([
-                    'name' => $name,
-                    'task_count' => 1
-                ]);
-            } catch (\Illuminate\Database\QueryException $e) {
-                self::where('name', $name)->increment('task_count');
-            }
-        } else {
-            self::where('name', $name)->increment('task_count');
+        if (!$assignment->exists) {
+            $assignment->task_count = 0;
+            $assignment->created_tasks = [];
+            $assignment->created_subtasks = [];
+            $assignment->updated_tasks = [];
+            $assignment->updated_subtasks = [];
         }
+
+        $assignment->task_count += 1;
+
+        $column = $action . '_' . ($type === 'task' ? 'tasks' : 'subtasks');
+
+        $currentIds = $assignment->$column ?? [];
+        if (!in_array($id, $currentIds)) {
+            $currentIds[] = $id;
+        }
+        $assignment->$column = $currentIds;
+
+        $assignment->save();
     }
 }

@@ -45,11 +45,13 @@
             @forelse($dailyAssignments as $assignment)
                 <div
                     class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-xl text-xs font-medium text-indigo-700 shadow-sm animate-fade-in">
-                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                    <span>{{ $assignment->name }}</span>
-                    <span class="bg-indigo-200 text-indigo-900 font-bold px-1.5 py-0.2 rounded-md ml-0.5">
-                        {{ $assignment->task_count }}
-                    </span>
+                    <a href="{{ route('daily-assignments.show', $assignment->id) }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                        <span>{{ $assignment->name }}</span>
+                        <span class="bg-indigo-200 text-indigo-900 font-bold px-1.5 py-0.2 rounded-md ml-0.5">
+                            {{ $assignment->task_count }}
+                        </span>
+                    </a>
                 </div>
             @empty
                 <span class="text-xs text-gray-400 italic">Aucune nouvelle tâche aujourd'hui</span>

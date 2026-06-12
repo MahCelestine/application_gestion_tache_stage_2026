@@ -23,7 +23,7 @@ class SubtaskController extends Controller
 
         $subtask->load('equipes');
         foreach ($subtask->equipes as $equipe) {
-            DailyAssignment::incrementTaskCountForToday($equipe->prenom);
+            DailyAssignment::incrementTaskCountForToday($equipe->prenom, $subtask->id, 'subtask', 'created');
         } 
 
         $redirect = $request->input('redirect_to', 'task.index');
@@ -57,12 +57,12 @@ class SubtaskController extends Controller
     if (!empty($newlyAssignedIds)) {
         $prenoms = \DB::table('equipes')->whereIn('id', $newlyAssignedIds)->pluck('prenom');
         foreach ($prenoms as $prenom) {
-            DailyAssignment::incrementTaskCountForToday((string) $prenom);
+            DailyAssignment::incrementTaskCountForToday((string) $prenom, $subtask->id, 'subtask', 'updated');
         }
     } elseif ($importantFieldChanged) {
         $subtask->load('equipes');
         foreach ($subtask->equipes as $equipe) {
-            DailyAssignment::incrementTaskCountForToday((string) $equipe->prenom);
+            DailyAssignment::incrementTaskCountForToday((string) $equipe->prenom, $subtask->id, 'subtask', 'updated');
         }
     }
 

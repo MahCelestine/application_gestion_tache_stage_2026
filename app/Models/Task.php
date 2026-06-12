@@ -110,7 +110,7 @@ class Task extends Model
                             ->pluck('prenom');
 
                         foreach ($prenoms as $prenom) {
-                            DailyAssignment::incrementTaskCountForToday((string) $prenom);
+                            DailyAssignment::incrementTaskCountForToday((string) $prenom, $subtask->id, 'subtask', 'created');
                         }
                     }
                 }
@@ -121,8 +121,15 @@ class Task extends Model
         });
     }
 
-    public function updateWithLogic(array $data, array $additionalData)
+    public function updateWithLogic(array $data, array $additionalData = [])
     {
+        // FIX SÉCURITÉ : Si 'status' n'est pas fourni dans $data, on prend la valeur actuelle
+        // Cela évite l'erreur "Undefined array key" si le formulaire ne l'envoie pas.
+        $targetStatus = $data['status'] ?? $this->status;
+
+        // Ta ligne d'origine, maintenant sécurisée avec $targetStatus
+        $statusPassedToBatOk = ($targetStatus === 'BAT ok' && $this->status !== 'BAT ok');
+
         $this->fill([
             'label' => $data['label'],
             'due_date' => $data['due_date'],
@@ -133,7 +140,7 @@ class Task extends Model
 
         $importantFieldChanged = $this->isDirty(['label', 'due_date', 'quote_number', 'billing_info', 'client_id']);
 
-        $this->importantFieldsWereChanged = $importantFieldChanged;
+        $this->importantFieldsWereChanged = ($importantFieldChanged || $statusPassedToBatOk);
 
         $hasSubtasks = $this->subtasks()->exists();
 
@@ -144,16 +151,18 @@ class Task extends Model
 
             $newActual = max(0, $this->actual_hours + $decimalToAdd - $decimalToReduce);
 
-            if ($data['status'] == 'bloqué') {
+            // Utilisation de la variable sécurisée ici aussi
+            if ($targetStatus == 'bloqué') {
                 $this->reasons()->updateOrCreate(
                     ['is_finish' => false],
-                    ['description' => $data['reason_description']]
+                    ['description' => $data['reason_description'] ?? '']
                 );
             } elseif ($this->status === 'bloqué') {
                 $this->reasons()->where('is_finish', false)->update(['is_finish' => true]);
             }
 
-            $this->status = $data['status'];
+            // Ta ligne d'origine qui applique le statut
+            $this->status = $targetStatus;
 
         } else {
             if (($this->subtasks()->sum('estimated_hours')) > 0) {
@@ -164,17 +173,26 @@ class Task extends Model
             $newActual = $this->subtasks()->sum('actual_hours');
         }
 
-        return $this->update([
-            'label' => $data['label'],
-            'estimated_hours' => $newEstimated,
-            'actual_hours' => $newActual,
-            'due_date' => $data['due_date'],
-            'quote_number' => isset($data['quote_number']) ? $data['quote_number'] : null,
-            'billing_info' => isset($data['billing_info']) ? $data['billing_info'] : null,
-            'client_id' => $data['client_id'],
-        ]);
-    }
+        $this->estimated_hours = $newEstimated;
+        $this->actual_hours = $newActual;
 
+        // Sauvegarde globale de l'instance
+        $saved = $this->save();
+
+        // Enregistrement dans le résumé journalier si un champ critique a bougé
+        if ($saved && $this->importantFieldsWereChanged) {
+            foreach ($this->equipes as $equipe) {
+                DailyAssignment::incrementTaskCountForToday(
+                    $equipe->prenom,
+                    $this->id,
+                    'task',
+                    'updated'
+                );
+            }
+        }
+
+        return $saved;
+    }
     public function duplicateWithSubtasks()
     {
         return DB::transaction(function () {

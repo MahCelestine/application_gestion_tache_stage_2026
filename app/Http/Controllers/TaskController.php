@@ -22,7 +22,7 @@ class TaskController extends Controller
 
         $task->load('equipes');
         foreach ($task->equipes as $equipe) {
-            DailyAssignment::incrementTaskCountForToday($equipe->prenom);
+            DailyAssignment::incrementTaskCountForToday($equipe->prenom, $task->id, 'task', 'created');
         }
 
         $redirectRoute = $request->input('redirect_to', 'tasks.index');
@@ -91,12 +91,12 @@ class TaskController extends Controller
         if (!empty($newlyAssignedIds)) {
             $prenoms = \DB::table('equipes')->whereIn('id', $newlyAssignedIds)->pluck('prenom');
             foreach ($prenoms as $prenom) {
-                DailyAssignment::incrementTaskCountForToday((string) $prenom);
+                DailyAssignment::incrementTaskCountForToday((string) $prenom, $task->id, 'task', 'updated');
             }
         } elseif ($importantFieldChanged) {
             $task->load('equipes');
             foreach ($task->equipes as $equipe) {
-                DailyAssignment::incrementTaskCountForToday((string) $equipe->prenom);
+                DailyAssignment::incrementTaskCountForToday((string) $equipe->prenom, $task->id, 'task', 'updated');
             }
         }
 

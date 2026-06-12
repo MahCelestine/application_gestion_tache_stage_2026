@@ -4,6 +4,7 @@ use App\Http\Controllers\EvolizSyncController;
 use App\Http\Controllers\ProspectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\SubtaskController;
+use App\Http\Controllers\DailyAssignmentController;
 use Illuminate\Support\Facades\Route;
 
 // --- ROUTES PROTÉGÉES (L'utilisateur doit être connecté) ---
@@ -18,6 +19,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::get('/subtasks/{subtask}/edit', [SubtaskController::class, 'edit'])->name('subtasks.edit');
     Route::get('/projet_cca', [TaskController::class, 'indexCCA'])->name('tasks.cca');
+    Route::get('/daily-assignments/{dailyAssignment}', [DailyAssignmentController::class, 'show'])->name('daily-assignments.show');
 
     // Gestions
     Route::get('/gestions', [TaskController::class, 'indexGestion'])->name('gestions.gestion');
@@ -37,7 +39,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::post('/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');
     Route::post('/prospects', [ProspectController::class, 'store'])->name('prospects.store');
-        Route::post('/tasks/{task}/duplicate', [TaskController::class, 'duplicate'])->name('tasks.duplicate');
+    Route::post('/tasks/{task}/duplicate', [TaskController::class, 'duplicate'])->name('tasks.duplicate');
 
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::put('/subtasks/{subtask}', [SubtaskController::class, 'update'])->name('subtasks.update');
